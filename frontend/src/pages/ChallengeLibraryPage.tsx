@@ -57,19 +57,30 @@ export const ChallengeLibraryPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-          <Terminal className="w-7 h-7 text-indigo-400" />
-          Coding Challenge Library
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Practice standard algorithmic problem-solving with isolated test execution and progressive AI hints.
-        </p>
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.06] pb-6">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+              <Terminal className="w-6 h-6 text-indigo-400" />
+              <span>Algorithmic Challenge Library</span>
+            </h1>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Standard interview algorithms with isolated subprocess evaluation and 4-tier progressive AI hints.
+          </p>
+        </div>
+
+        {/* Quick Stats Pill */}
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="px-3 py-1.5 rounded-xl bg-obsidian-850 border border-white/[0.08] text-xs font-mono text-slate-300">
+            <span className="text-indigo-400 font-bold">{challenges.length}</span> Challenges Loaded
+          </div>
+        </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 text-sm">
+        <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs">
           {error}
         </div>
       )}
@@ -85,8 +96,8 @@ export const ChallengeLibraryPage: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title or concept..."
-              className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm"
+              placeholder="Search challenges or patterns..."
+              className="w-full pl-10 pr-9 py-2 rounded-xl border border-white/[0.08] bg-obsidian-950 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs transition-all shadow-inner"
             />
             {search && (
               <button
@@ -102,15 +113,15 @@ export const ChallengeLibraryPage: React.FC = () => {
             )}
           </form>
 
-          {/* Difficulty Tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto overflow-x-auto">
+          {/* Difficulty Segmented Control */}
+          <div className="flex items-center gap-1 bg-obsidian-950 p-1 rounded-xl border border-white/[0.08] w-full sm:w-auto overflow-x-auto">
             {['all', 'beginner', 'intermediate', 'advanced'].map((lvl) => (
               <button
                 key={lvl}
                 onClick={() => setDifficulty(lvl)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-mono font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
                   difficulty === lvl
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-indigo-600 text-white shadow-glow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -122,16 +133,16 @@ export const ChallengeLibraryPage: React.FC = () => {
         </div>
 
         {/* Topic Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-800/80">
+        <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-white/[0.06]">
           <span className="text-xs font-medium text-slate-400 mr-1 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Topics:
+            <Filter className="w-3.5 h-3.5 text-indigo-400" /> Topics:
           </span>
           <button
             onClick={() => setSelectedTopic('all')}
             className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
               selectedTopic === 'all'
-                ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50'
-                : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 shadow-glow-sm'
+                : 'bg-obsidian-950 text-slate-400 border-white/[0.06] hover:text-white hover:border-white/[0.12]'
             }`}
           >
             All Topics
@@ -142,8 +153,8 @@ export const ChallengeLibraryPage: React.FC = () => {
               onClick={() => setSelectedTopic(t)}
               className={`px-2.5 py-1 rounded-full text-xs font-medium border capitalize transition-all ${
                 selectedTopic === t
-                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 shadow-glow-sm'
+                  : 'bg-obsidian-950 text-slate-400 border-white/[0.06] hover:text-white hover:border-white/[0.12]'
               }`}
             >
               {t.replace('_', ' ')}
@@ -154,16 +165,16 @@ export const ChallengeLibraryPage: React.FC = () => {
 
       {/* Challenges Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-44 bg-slate-900 rounded-xl border border-slate-800" />
+            <div key={i} className="h-44 bg-obsidian-850/80 rounded-xl border border-white/[0.06]" />
           ))}
         </div>
       ) : challenges.length === 0 ? (
         <div className="quest-card p-12 text-center space-y-3">
           <Terminal className="w-10 h-10 text-slate-600 mx-auto" />
-          <h3 className="text-lg font-semibold text-white">No challenges match your criteria</h3>
-          <p className="text-sm text-slate-400 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-white">No challenges match your criteria</h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
             Try adjusting your search keywords or resetting difficulty and topic filters.
           </p>
           <button
@@ -172,7 +183,7 @@ export const ChallengeLibraryPage: React.FC = () => {
               setDifficulty('all');
               setSelectedTopic('all');
             }}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-all"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-750 text-white border border-white/[0.1] transition-all"
           >
             Reset Filters
           </button>
@@ -183,12 +194,12 @@ export const ChallengeLibraryPage: React.FC = () => {
             return (
               <div
                 key={c.id}
-                className="quest-card p-6 flex flex-col justify-between quest-card-hover group border-slate-800"
+                className="quest-card-interactive p-6 flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                         difficultyColors[c.difficulty]
                       }`}
                     >
@@ -198,7 +209,7 @@ export const ChallengeLibraryPage: React.FC = () => {
                     {c.is_solved && (
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Solved
+                        Verified
                       </span>
                     )}
                   </div>
@@ -211,7 +222,7 @@ export const ChallengeLibraryPage: React.FC = () => {
                     {c.topics?.map((topic) => (
                       <span
                         key={topic}
-                        className="text-[10px] font-medium text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 capitalize"
+                        className="text-[10px] font-mono text-slate-400 bg-obsidian-950 px-2 py-0.5 rounded border border-white/[0.06] capitalize"
                       >
                         {topic.replace('_', ' ')}
                       </span>
@@ -219,17 +230,17 @@ export const ChallengeLibraryPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-5 mt-4 border-t border-slate-800/80 flex items-center justify-between">
-                  <span className="text-xs text-slate-400 flex items-center gap-1">
-                    <Cpu className="w-3.5 h-3.5 text-slate-400" />
+                <div className="pt-4 mt-4 border-t border-white/[0.06] flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
+                    <Cpu className="w-3.5 h-3.5 text-slate-500" />
                     {c.time_limit_ms}ms limit
                   </span>
 
                   <Link
-                    to={`/challenge/${c.slug}`}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-indigo-400 group-hover:text-indigo-300 transition-colors"
+                    to={`/challenges/${c.slug}`}
+                    className="flex items-center gap-1 text-xs font-semibold text-indigo-400 group-hover:text-indigo-300 transition-colors"
                   >
-                    <span>{c.is_solved ? 'Practice Again' : 'Solve Challenge'}</span>
+                    <span>{c.is_solved ? 'Practice Again' : 'Solve'}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>

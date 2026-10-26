@@ -3,45 +3,102 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-[#0b0f19] text-slate-100 font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  :root {
+    color-scheme: dark;
   }
+
+  body {
+    @apply bg-obsidian-950 text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(16, 185, 129, 0.05), transparent);
+    background-attachment: fixed;
+  }
+}
+
+/* Background Patterns */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-dots-pattern {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Glassmorphism & Developer Card Utilities */
 .quest-card {
-  @apply bg-slate-900/70 border border-slate-800 rounded-xl backdrop-blur-md shadow-xl transition-all duration-200;
+  @apply bg-obsidian-850/80 border border-white/[0.07] rounded-xl backdrop-blur-xl shadow-card transition-all duration-200;
 }
-.quest-card-hover {
-  @apply hover:border-slate-700 hover:shadow-indigo-500/5 hover:-translate-y-0.5;
+
+.quest-card-interactive {
+  @apply quest-card hover:border-white/[0.14] hover:shadow-card-hover hover:-translate-y-0.5;
+}
+
+.quest-glass {
+  background: rgba(14, 18, 27, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .quest-badge {
-  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border;
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all;
+}
+
+/* Shimmer effect for progress bars & loading states */
+.shimmer-bar {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: shimmer 2s infinite;
 }
 
 /* Glow effects */
-.glow-indigo {
-  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+.glow-brand {
+  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.35);
 }
 
 .glow-emerald {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.35);
+}
+
+.glow-amber {
+  box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
+}
+
+/* Monaco container styling overrides */
+.monaco-editor,
+.monaco-editor .overflow-guard {
+  border-radius: 0 0 0.75rem 0.75rem;
 }
