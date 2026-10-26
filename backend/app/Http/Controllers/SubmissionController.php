@@ -27,9 +27,22 @@ class SubmissionController extends Controller
         $validated = $request->validate([
             'challenge_id' => 'required|exists:challenges,id',
             'language' => 'required|in:javascript,python',
-            'code' => 'required|string|max:65536', // 64KB max code size
+            'code' => 'nullable|string|max:65536',
+            'modified_files' => 'nullable|array',
+            'modified_files.*.path' => 'required_with:modified_files|string|max:255',
+            'modified_files.*.content' => 'required_with:modified_files|string',
+            'hypothesis' => 'nullable|array',
+            'patch_diff' => 'nullable|string|max:65536',
             'idempotency_key' => 'nullable|string|max:64',
         ]);
+
+        $code = $validated['code'] ?? '';
+        $modifiedFiles = $validated['modified_files'] ?? [];
+
+        // If no code and modified_files has files, grab the first file's content as code fallback
+        if (empty($code) && !empty($modifiedFiles)) {
+            $code = $modifiedFiles[0]['content'] ?? '';
+        }
 
         // Idempotency check: if submitted with identical key in last 10 seconds, return existing
         if (!empty($validated['idempotency_key'])) {
@@ -52,7 +65,8 @@ class SubmissionController extends Controller
         $evalResult = $this->judgeService->evaluate(
             $challenge,
             $validated['language'],
-            $validated['code']
+            $code,
+            $modifiedFiles
         );
 
         // Persist submission record
@@ -60,7 +74,10 @@ class SubmissionController extends Controller
             'user_id' => $user->id,
             'challenge_id' => $challenge->id,
             'language' => $validated['language'],
-            'code' => $validated['code'],
+            'code' => $code,
+            'modified_files' => $modifiedFiles,
+            'patch_diff' => $validated['patch_diff'] ?? null,
+            'hypothesis' => $validated['hypothesis'] ?? null,
             'status' => $evalResult['status'],
             'pass_count' => $evalResult['pass_count'],
             'total_count' => $evalResult['total_count'],
@@ -86,6 +103,8 @@ class SubmissionController extends Controller
                 'memory_kb' => $submission->memory_kb,
                 'error_output' => $submission->error_output,
                 'public_test_results' => $submission->public_test_results,
+                'patch_diff' => $submission->patch_diff,
+                'hypothesis' => $submission->hypothesis,
                 'created_at' => $submission->created_at->toIso8601String(),
             ]
         ], 201);
@@ -95,18 +114,14 @@ class SubmissionController extends Controller
     {
         $user = $request->user();
 
-        $query = Submission::with('challenge:id,title,slug,difficulty')
+        $query = Submission::with('challenge:id,title,slug,difficulty,category')
             ->where('user_id', $user->id);
 
         if ($request->filled('challenge_id')) {
             $query->where('challenge_id', $request->challenge_id);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $submissions = $query->orderByDesc('created_at')->paginate(15);
+        $submissions = $query->orderByDesc('created_at')->paginate(20);
 
         return response()->json($submissions);
     }
@@ -114,12 +129,11 @@ class SubmissionController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
-        $submission = Submission::with('challenge:id,title,slug,difficulty')->findOrFail($id);
 
-        // Authorization check: only owner or educator/admin can view
-        if ($submission->user_id !== $user->id && !$user->isEducator() && !$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized access to submission'], 403);
-        }
+        $submission = Submission::with('challenge:id,title,slug,difficulty,category')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
 
         return response()->json([
             'submission' => $submission,

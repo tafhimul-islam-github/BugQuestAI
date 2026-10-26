@@ -4,71 +4,71 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    @apply bg-obsidian-950 text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200;
+    @apply bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-600 selection:text-white;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(16, 185, 129, 0.05), transparent);
+      radial-gradient(ellipse 70% 40% at 50% -10%, rgba(37, 99, 235, 0.07), transparent),
+      radial-gradient(ellipse 50% 30% at 90% 70%, rgba(14, 165, 233, 0.04), transparent);
     background-attachment: fixed;
   }
 }
 
-/* Background Patterns */
+/* Background Grids & Dots */
 .bg-grid-pattern {
   background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
 }
 
 .bg-dots-pattern {
   background-size: 24px 24px;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px);
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #94a3b8;
 }
 
-/* Glassmorphism & Developer Card Utilities */
+/* Card & Surface Utilities */
 .quest-card {
-  @apply bg-obsidian-850/80 border border-white/[0.07] rounded-xl backdrop-blur-xl shadow-card transition-all duration-200;
+  @apply bg-white border border-slate-200/90 rounded-2xl shadow-card transition-all duration-200;
 }
 
 .quest-card-interactive {
-  @apply quest-card hover:border-white/[0.14] hover:shadow-card-hover hover:-translate-y-0.5;
+  @apply quest-card hover:border-blue-300 hover:shadow-card-hover hover:-translate-y-0.5;
 }
 
 .quest-glass {
-  background: rgba(14, 18, 27, 0.7);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .quest-badge {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all;
 }
 
-/* Shimmer effect for progress bars & loading states */
+/* Shimmer effect for progress bars */
 .shimmer-bar {
   position: relative;
   overflow: hidden;
@@ -80,24 +80,24 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   animation: shimmer 2s infinite;
 }
 
 /* Glow effects */
-.glow-brand {
-  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.35);
+.glow-blue {
+  box-shadow: 0 0 25px -4px rgba(37, 99, 235, 0.25);
 }
 
 .glow-emerald {
-  box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.2);
 }
 
 .glow-amber {
-  box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.2);
 }
 
-/* Monaco container styling overrides */
+/* Monaco container styling overrides for light theme */
 .monaco-editor,
 .monaco-editor .overflow-guard {
   border-radius: 0 0 0.75rem 0.75rem;

@@ -14,7 +14,14 @@ class Challenge extends Model
         'slug',
         'title',
         'difficulty',
+        'category',
+        'framework',
+        'investigation_time_minutes',
         'description',
+        'bug_report',
+        'repository_files',
+        'reference_patch',
+        'entrypoint_test',
         'input_spec',
         'output_spec',
         'constraints',
@@ -31,6 +38,9 @@ class Challenge extends Model
     ];
 
     protected $casts = [
+        'bug_report' => 'array',
+        'repository_files' => 'array',
+        'reference_patch' => 'array',
         'constraints' => 'array',
         'public_examples' => 'array',
         'starter_code' => 'array',
@@ -38,6 +48,7 @@ class Challenge extends Model
         'topics' => 'array',
         'hints' => 'array',
         'is_active' => 'boolean',
+        'investigation_time_minutes' => 'integer',
         'time_limit_ms' => 'integer',
         'memory_limit_mb' => 'integer',
         'order_index' => 'integer',
