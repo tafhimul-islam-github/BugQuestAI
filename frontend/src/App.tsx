@@ -35,7 +35,7 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <div className="flex flex-col min-h-screen bg-[#0b0f19] text-slate-100">
+          <div className="flex flex-col min-h-screen bg-obsidian-950 text-slate-100">
             <Navbar />
             <main className="flex-1">
               <Routes>
@@ -45,6 +45,7 @@ export const App: React.FC = () => {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/challenges" element={<ChallengeLibraryPage />} />
                 <Route path="/challenge/:slug" element={<CodingWorkspacePage />} />
+                <Route path="/challenges/:slug" element={<CodingWorkspacePage />} />
                 <Route path="/report/shared/:token" element={<PublicSharedReportPage />} />
 
                 {/* Authenticated Routes */}

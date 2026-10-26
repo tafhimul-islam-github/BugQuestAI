@@ -49,7 +49,7 @@ class AiCoachService
 
         // 1. Attempt calling the dedicated FastAPI AI Service
         try {
-            $response = Http::timeout(8)->post("{$this->aiServiceUrl}/api/v1/hint", $payload);
+            $response = Http::timeout(2)->post("{$this->aiServiceUrl}/api/v1/hint", $payload);
 
             if ($response->successful()) {
                 $data = $response->json();

@@ -28,7 +28,7 @@ export const CodingWorkspacePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Tabs
-  const [leftTab, setLeftTab] = useState<'description' | 'examples' | 'editorial' | 'history'>('description');
+  const [leftTab, setLeftTab] = useState<'description' | 'examples' | 'editorial'>('description');
   const [bottomTab, setBottomTab] = useState<'results' | 'coach'>('results');
 
   // Execution state
@@ -125,7 +125,7 @@ export const CodingWorkspacePage: React.FC = () => {
 
       setCurrentHint(res.hint);
     } catch (err: any) {
-      setHintError(err.message || 'Failed to generate coaching hint.');
+      setHintError(err.message || 'Failed to request progressive hint');
     } finally {
       setRequestingHint(false);
     }
@@ -133,10 +133,10 @@ export const CodingWorkspacePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-[#0b0f19]">
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-obsidian-950">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-mono text-slate-400">Loading coding workspace...</span>
+          <span className="text-xs font-mono text-slate-400">Initializing isolated sandbox environment...</span>
         </div>
       </div>
     );
@@ -147,8 +147,8 @@ export const CodingWorkspacePage: React.FC = () => {
       <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4">
         <AlertTriangle className="w-12 h-12 text-rose-400 mx-auto" />
         <h2 className="text-xl font-bold text-white">Challenge Not Found</h2>
-        <p className="text-sm text-slate-400">{error || 'This challenge does not exist or has been archived.'}</p>
-        <Link to="/challenges" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+        <p className="text-xs text-slate-400">{error || 'This challenge does not exist or has been archived.'}</p>
+        <Link to="/challenges" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">
           Return to Challenge Library
         </Link>
       </div>
@@ -162,35 +162,35 @@ export const CodingWorkspacePage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#0b0f19] overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-obsidian-950 overflow-hidden font-sans">
       
       {/* Top Workspace Bar */}
-      <div className="h-12 border-b border-slate-800 bg-slate-950 px-4 flex items-center justify-between shrink-0">
+      <div className="h-12 border-b border-white/[0.07] bg-obsidian-900 px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link to="/challenges" className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 text-xs font-medium">
             <ArrowLeft className="w-3.5 h-3.5" />
-            Challenges
+            <span>Challenges</span>
           </Link>
-          <span className="text-slate-700">|</span>
-          <span className="font-semibold text-white text-sm flex items-center gap-2">
+          <span className="text-white/[0.15]">/</span>
+          <span className="font-bold text-white text-xs flex items-center gap-2">
             {challenge.title}
           </span>
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${difficultyColors[challenge.difficulty]}`}>
+          <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${difficultyColors[challenge.difficulty]}`}>
             {challenge.difficulty}
           </span>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* Language Switcher */}
-          <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-obsidian-950 p-0.5 rounded-lg border border-white/[0.08] text-xs">
             {challenge.supported_languages?.map((lang) => (
               <button
                 key={lang}
                 onClick={() => handleLanguageChange(lang as any)}
-                className={`px-2.5 py-1 rounded font-mono capitalize transition-all ${
+                className={`px-2.5 py-1 rounded font-mono text-[11px] capitalize transition-all ${
                   language === lang
-                    ? 'bg-indigo-600 text-white font-semibold'
+                    ? 'bg-indigo-600 text-white font-semibold shadow-glow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -202,15 +202,15 @@ export const CodingWorkspacePage: React.FC = () => {
           <button
             onClick={handleResetCode}
             title="Reset starter code"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] transition-all"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
           <button
             onClick={handleRequestHint}
             disabled={requestingHint}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 text-xs font-semibold shadow-glow-sm transition-all"
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             <span>AI Coach Hint</span>
@@ -219,7 +219,7 @@ export const CodingWorkspacePage: React.FC = () => {
           <button
             onClick={handleSubmitSolution}
             disabled={submitting}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all hover:scale-105"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50 text-white text-xs font-semibold shadow-glow-md transition-all hover:scale-[1.02]"
           >
             {submitting ? (
               <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -235,61 +235,61 @@ export const CodingWorkspacePage: React.FC = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
         
         {/* Left Side: Challenge Details (5 cols) */}
-        <div className="lg:col-span-5 border-r border-slate-800 flex flex-col bg-slate-900/40 overflow-hidden">
+        <div className="lg:col-span-5 border-r border-white/[0.07] flex flex-col bg-obsidian-900/60 overflow-hidden">
           
           {/* Left Tabs */}
-          <div className="flex items-center gap-1 px-3 pt-2 border-b border-slate-800 bg-slate-950/80 shrink-0 text-xs font-medium">
+          <div className="flex items-center gap-1 px-3 pt-1.5 border-b border-white/[0.07] bg-obsidian-950 shrink-0 text-xs font-medium">
             <button
               onClick={() => setLeftTab('description')}
-              className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 border-b-2 text-xs transition-all flex items-center gap-1.5 ${
                 leftTab === 'description'
-                  ? 'border-indigo-500 text-indigo-400 font-semibold'
+                  ? 'border-indigo-500 text-indigo-300 font-semibold'
                   : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              Description
+              <span>Description</span>
             </button>
             <button
               onClick={() => setLeftTab('examples')}
-              className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 border-b-2 text-xs transition-all flex items-center gap-1.5 ${
                 leftTab === 'examples'
-                  ? 'border-indigo-500 text-indigo-400 font-semibold'
+                  ? 'border-indigo-500 text-indigo-300 font-semibold'
                   : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               <Terminal className="w-3.5 h-3.5" />
-              Examples
+              <span>Examples</span>
             </button>
             <button
               onClick={() => setLeftTab('editorial')}
-              className={`px-3 py-2 border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 border-b-2 text-xs transition-all flex items-center gap-1.5 ${
                 leftTab === 'editorial'
-                  ? 'border-indigo-500 text-indigo-400 font-semibold'
+                  ? 'border-indigo-500 text-indigo-300 font-semibold'
                   : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              Editorial
+              <span>Editorial</span>
             </button>
           </div>
 
           {/* Tab Content Container */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6 text-sm text-slate-300 leading-relaxed">
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs text-slate-300 leading-relaxed">
             
             {leftTab === 'description' && (
               <>
                 <div className="space-y-3">
-                  <h3 className="text-base font-bold text-white tracking-tight">Problem Statement</h3>
-                  <div className="whitespace-pre-line text-slate-300 font-normal">
+                  <h3 className="text-sm font-bold text-white tracking-tight">Problem Statement</h3>
+                  <div className="whitespace-pre-line text-slate-300 font-normal leading-relaxed text-xs">
                     {challenge.description}
                   </div>
                 </div>
 
                 {challenge.input_spec && (
-                  <div className="space-y-1.5 pt-4 border-t border-slate-800">
-                    <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">Input Specification</h4>
-                    <p className="text-xs text-slate-300 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                  <div className="space-y-1.5 pt-4 border-t border-white/[0.06]">
+                    <h4 className="text-[11px] font-mono uppercase font-bold tracking-wider text-slate-400">Input Specification</h4>
+                    <p className="text-xs text-slate-300 font-mono bg-obsidian-950 p-2.5 rounded-lg border border-white/[0.06]">
                       {challenge.input_spec}
                     </p>
                   </div>
@@ -297,16 +297,16 @@ export const CodingWorkspacePage: React.FC = () => {
 
                 {challenge.output_spec && (
                   <div className="space-y-1.5 pt-2">
-                    <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">Output Specification</h4>
-                    <p className="text-xs text-slate-300 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <h4 className="text-[11px] font-mono uppercase font-bold tracking-wider text-slate-400">Output Specification</h4>
+                    <p className="text-xs text-slate-300 font-mono bg-obsidian-950 p-2.5 rounded-lg border border-white/[0.06]">
                       {challenge.output_spec}
                     </p>
                   </div>
                 )}
 
                 {challenge.constraints && challenge.constraints.length > 0 && (
-                  <div className="space-y-2 pt-4 border-t border-slate-800">
-                    <h4 className="text-xs uppercase font-bold tracking-wider text-slate-400">Constraints</h4>
+                  <div className="space-y-2 pt-4 border-t border-white/[0.06]">
+                    <h4 className="text-[11px] font-mono uppercase font-bold tracking-wider text-slate-400">Constraints</h4>
                     <ul className="list-disc list-inside space-y-1 text-xs text-slate-400 font-mono">
                       {challenge.constraints.map((c, i) => (
                         <li key={i}>{c}</li>
@@ -315,7 +315,7 @@ export const CodingWorkspacePage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-slate-500">
                   <span>Execution limit: {challenge.time_limit_ms}ms</span>
                   <span>Memory limit: {challenge.memory_limit_mb}MB</span>
                 </div>
@@ -324,9 +324,9 @@ export const CodingWorkspacePage: React.FC = () => {
 
             {leftTab === 'examples' && (
               <div className="space-y-4">
-                <h3 className="text-base font-bold text-white">Public Test Examples</h3>
+                <h3 className="text-sm font-bold text-white">Public Test Examples</h3>
                 {challenge.public_examples?.map((ex, idx) => (
-                  <div key={idx} className="p-4 rounded-xl border border-slate-800 bg-slate-950/80 space-y-2 font-mono text-xs">
+                  <div key={idx} className="p-4 rounded-xl border border-white/[0.06] bg-obsidian-950 space-y-2 font-mono text-xs">
                     <div className="font-sans font-bold text-indigo-400 text-xs">Example {idx + 1}</div>
                     <div>
                       <span className="text-slate-500">Input: </span>
@@ -337,7 +337,7 @@ export const CodingWorkspacePage: React.FC = () => {
                       <span className="text-emerald-400 font-semibold">{ex.output}</span>
                     </div>
                     {ex.explanation && (
-                      <div className="font-sans text-slate-400 text-[11px] pt-1 border-t border-slate-800/80">
+                      <div className="font-sans text-slate-400 text-[11px] pt-1.5 border-t border-white/[0.06]">
                         {ex.explanation}
                       </div>
                     )}
@@ -348,9 +348,9 @@ export const CodingWorkspacePage: React.FC = () => {
 
             {leftTab === 'editorial' && (
               <div className="space-y-4">
-                <h3 className="text-base font-bold text-white">Editorial & Algorithmic Design</h3>
-                <div className="prose prose-invert prose-sm max-w-none text-slate-300">
-                  <div className="whitespace-pre-line bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <h3 className="text-sm font-bold text-white">Editorial & Algorithmic Design</h3>
+                <div className="text-slate-300">
+                  <div className="whitespace-pre-line bg-obsidian-950 p-4 rounded-xl border border-white/[0.06] font-normal leading-relaxed text-xs">
                     {challenge.editorial || 'No editorial has been published for this challenge yet.'}
                   </div>
                 </div>
@@ -361,10 +361,10 @@ export const CodingWorkspacePage: React.FC = () => {
         </div>
 
         {/* Right Side: Monaco Editor (Top) & Bottom Drawer (Results / AI Coach) */}
-        <div className="lg:col-span-7 flex flex-col overflow-hidden bg-slate-950">
+        <div className="lg:col-span-7 flex flex-col overflow-hidden bg-obsidian-950">
           
           {/* Monaco Editor Container (60% height) */}
-          <div className="h-[60%] border-b border-slate-800 relative">
+          <div className="h-[60%] border-b border-white/[0.07] relative">
             <Editor
               height="100%"
               language={language}
@@ -374,7 +374,7 @@ export const CodingWorkspacePage: React.FC = () => {
               options={{
                 minimap: { enabled: false },
                 fontSize: 13,
-                fontFamily: "'Fira Code', monospace",
+                fontFamily: "'Fira Code', 'JetBrains Mono', monospace",
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
@@ -384,21 +384,21 @@ export const CodingWorkspacePage: React.FC = () => {
           </div>
 
           {/* Bottom Pane (40% height): Test Results & AI Debugging Coach */}
-          <div className="h-[40%] flex flex-col bg-slate-900/60 overflow-hidden">
+          <div className="h-[40%] flex flex-col bg-obsidian-900/80 overflow-hidden">
             
             {/* Bottom Tabs & Hint Level Selector */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950 shrink-0 text-xs">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.07] bg-obsidian-950 shrink-0 text-xs">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setBottomTab('results')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                     bottomTab === 'results'
-                      ? 'bg-slate-800 text-white font-semibold'
+                      ? 'bg-obsidian-800 text-white font-semibold border border-white/[0.1]'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <Terminal className="w-3.5 h-3.5" />
-                  Test Results
+                  <span>Execution Output</span>
                   {submissionResult && (
                     <span className={`w-2 h-2 rounded-full ${submissionResult.status === 'accepted' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                   )}
@@ -406,32 +406,32 @@ export const CodingWorkspacePage: React.FC = () => {
 
                 <button
                   onClick={() => setBottomTab('coach')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                     bottomTab === 'coach'
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 font-semibold'
+                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-semibold'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  AI Debugging Coach
+                  <span>AI Debugging Coach</span>
                 </button>
               </div>
 
               {/* When Coach Tab is open, show hint level selector */}
               {bottomTab === 'coach' && (
-                <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
-                  <span className="text-[10px] text-slate-500 px-1 font-semibold uppercase tracking-wider">Level:</span>
+                <div className="flex items-center gap-1 bg-obsidian-900 p-0.5 rounded-lg border border-white/[0.08]">
+                  <span className="text-[10px] font-mono text-slate-500 px-1 font-semibold uppercase tracking-wider">Tier:</span>
                   {(['nudge', 'direction', 'debugging_guidance', 'detailed_explanation'] as const).map((lvl) => (
                     <button
                       key={lvl}
                       onClick={() => setHintLevel(lvl)}
                       className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
                         hintLevel === lvl
-                          ? 'bg-indigo-600 text-white font-semibold'
+                          ? 'bg-indigo-600 text-white font-semibold shadow-glow-sm'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      {lvl === 'debugging_guidance' ? 'Guidance' : lvl === 'detailed_explanation' ? 'Walkthrough' : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
+                      {lvl === 'debugging_guidance' ? 'Diagnostic' : lvl === 'detailed_explanation' ? 'Walkthrough' : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
                     </button>
                   ))}
                 </div>
@@ -446,8 +446,8 @@ export const CodingWorkspacePage: React.FC = () => {
                 <div className="space-y-4">
                   {!submissionResult ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2 py-8">
-                      <Terminal className="w-8 h-8 opacity-40" />
-                      <p>Run your code or click "Submit Solution" to trigger isolated assessment.</p>
+                      <Terminal className="w-8 h-8 opacity-40 text-indigo-400" />
+                      <p className="text-xs">Click "Submit Solution" to trigger isolated assessment across public & hidden test cases.</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -464,10 +464,10 @@ export const CodingWorkspacePage: React.FC = () => {
                             <XCircle className="w-5 h-5 shrink-0" />
                           )}
                           <div>
-                            <span className="font-bold text-sm uppercase tracking-wide">
+                            <span className="font-bold text-xs uppercase tracking-wide">
                               {submissionResult.status.replace('_', ' ')}
                             </span>
-                            <span className="text-slate-400 ml-2 font-mono">
+                            <span className="text-slate-400 ml-2 font-mono text-xs">
                               ({submissionResult.pass_count} / {submissionResult.total_count} Passed)
                             </span>
                           </div>
@@ -483,7 +483,7 @@ export const CodingWorkspacePage: React.FC = () => {
 
                       {/* Error Diagnostic Callout */}
                       {submissionResult.error_output && (
-                        <div className="p-3 rounded-lg border border-slate-800 bg-slate-950 font-mono text-rose-400 text-xs">
+                        <div className="p-3 rounded-lg border border-white/[0.08] bg-obsidian-950 font-mono text-rose-400 text-xs">
                           <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-1">Diagnostic Output:</span>
                           {submissionResult.error_output}
                         </div>
@@ -491,7 +491,7 @@ export const CodingWorkspacePage: React.FC = () => {
 
                       {/* Public Test Results Cards */}
                       <div className="space-y-2">
-                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                           Public Test Assertions:
                         </div>
 
@@ -500,7 +500,7 @@ export const CodingWorkspacePage: React.FC = () => {
                             key={i}
                             className={`p-3 rounded-lg border font-mono text-xs space-y-1 ${
                               res.status === 'passed'
-                                ? 'border-slate-800 bg-slate-950/60'
+                                ? 'border-white/[0.06] bg-obsidian-950'
                                 : 'border-rose-500/30 bg-rose-950/20'
                             }`}
                           >
@@ -519,9 +519,9 @@ export const CodingWorkspacePage: React.FC = () => {
                           </div>
                         ))}
 
-                        <div className="p-3 rounded-lg border border-slate-800/80 bg-slate-950/40 text-[11px] text-slate-400 flex items-center gap-2">
+                        <div className="p-3 rounded-lg border border-white/[0.06] bg-obsidian-950/60 text-[11px] text-slate-400 flex items-center gap-2">
                           <Shield className="w-4 h-4 text-indigo-400 shrink-0" />
-                          <span>Private hidden boundary assertions were evaluated securely to protect assessment integrity.</span>
+                          <span>Private hidden boundary assertions evaluated securely to prevent test leakage.</span>
                         </div>
                       </div>
                     </div>
@@ -538,19 +538,19 @@ export const CodingWorkspacePage: React.FC = () => {
                       <p className="font-mono text-xs">AI Coach analyzing your code and error patterns...</p>
                     </div>
                   ) : hintError ? (
-                    <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 text-xs">
+                    <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs">
                       {hintError}
                     </div>
                   ) : currentHint ? (
-                    <div className="quest-card p-5 border-indigo-500/30 bg-slate-950 space-y-4 glow-indigo">
+                    <div className="quest-card p-5 border-indigo-500/30 bg-obsidian-950 space-y-4 shadow-glow-sm">
                       
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-indigo-400" />
-                          <h4 className="font-bold text-white text-sm">{currentHint.summary}</h4>
+                          <h4 className="font-bold text-white text-xs">{currentHint.summary}</h4>
                         </div>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase font-semibold">
-                          Level: {currentHint.hint_level.replace('_', ' ')}
+                          Tier: {currentHint.hint_level.replace('_', ' ')}
                         </span>
                       </div>
 
@@ -561,13 +561,13 @@ export const CodingWorkspacePage: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="text-slate-200 text-xs leading-relaxed font-sans bg-slate-900/60 p-3.5 rounded-lg border border-slate-800">
+                      <div className="text-slate-200 text-xs leading-relaxed font-sans bg-obsidian-900 p-3.5 rounded-lg border border-white/[0.06]">
                         {currentHint.explanation}
                       </div>
 
                       {currentHint.next_steps && currentHint.next_steps.length > 0 && (
                         <div className="space-y-1.5">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Suggested Debugging Steps:</span>
+                          <span className="text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider">Suggested Debugging Steps:</span>
                           <ul className="space-y-1">
                             {currentHint.next_steps.map((step, idx) => (
                               <li key={idx} className="flex items-start gap-2 text-slate-300 text-xs">
@@ -579,9 +579,9 @@ export const CodingWorkspacePage: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                      <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-slate-500">
                         <span>Confidence: {Math.round(currentHint.confidence * 100)}%</span>
-                        <span>Request next hint level if you remain stuck.</span>
+                        <span>Unlock next tier if still stuck.</span>
                       </div>
 
                     </div>
@@ -589,11 +589,11 @@ export const CodingWorkspacePage: React.FC = () => {
                     <div className="py-8 flex flex-col items-center justify-center text-slate-400 space-y-3">
                       <Sparkles className="w-8 h-8 text-indigo-400/60" />
                       <p className="text-xs text-center max-w-sm">
-                        Select a hint level above and click "AI Coach Hint" to get contextual debugging guidance for your current code.
+                        Select a tier above and click "AI Coach Hint" to receive contextual pedagogical guidance for your solution.
                       </p>
                       <button
                         onClick={handleRequestHint}
-                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/30"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-glow-sm"
                       >
                         Request {hintLevel.replace('_', ' ')} Hint
                       </button>

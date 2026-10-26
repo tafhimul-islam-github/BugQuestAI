@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { 
   Sparkles, 
   ShieldCheck, 
-  Award, 
   ArrowRight, 
-  Code2, 
-  Layers, 
   Cpu, 
-  Lock,
-  ChevronRight
+  Terminal,
+  CheckCircle2,
+  BrainCircuit,
+  Fingerprint
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -17,251 +16,285 @@ export const LandingPage: React.FC = () => {
 
   const demoHints = {
     nudge: {
-      title: "Step 1: Conceptual Nudge",
-      text: "Notice that for each number X, there is only one specific Y that satisfies X + Y = Target. What lookup structure lets you find Y in constant time?",
-      badge: "No Solution Given"
+      step: '01',
+      title: 'Conceptual Nudge',
+      text: 'Notice that for each number X, there is only one specific Y that satisfies X + Y = Target. What lookup structure lets you query Y in O(1) constant time instead of re-scanning?',
+      tag: 'No Solution Spoilers',
+      tone: 'Socratic Inquiry',
+      color: 'border-indigo-500/30 text-indigo-300 bg-indigo-500/10'
     },
     direction: {
-      title: "Step 2: Directional Guidance",
-      text: "A nested loop takes O(N^2) time. Instead, as you iterate through the list, can you use a Hash Map (or JavaScript Map) to remember numbers you have already visited?",
-      badge: "Points to Pattern"
+      step: '02',
+      title: 'Directional Guidance',
+      text: 'A nested loop costs O(N²) time. As you iterate linearly through the array, can you record the numbers you have already visited inside a Hash Map (or JS Map) alongside their indices?',
+      tag: 'Pattern Identification',
+      tone: 'Algorithmic Strategy',
+      color: 'border-sky-500/30 text-sky-300 bg-sky-500/10'
     },
     debugging_guidance: {
-      title: "Step 3: Debugging Guidance",
-      text: "Common bug: inserting the current element into the map BEFORE checking for the complement! If Target = 6 and current number is 3, checking yourself could return [i, i].",
-      badge: "Targets Specific Bug"
+      step: '03',
+      title: 'Edge-Case Diagnosis',
+      text: 'Common bug detected: inserting the current element into the map BEFORE checking for the complement! If Target = 6 and current number is 3, checking the map first would match the element with itself, returning [i, i].',
+      tag: 'Pinpointed Fault',
+      tone: 'Failure Diagnostics',
+      color: 'border-amber-500/30 text-amber-300 bg-amber-500/10'
     },
     detailed_explanation: {
-      title: "Step 4: Comprehensive Walkthrough",
-      text: "Optimal Algorithm: Initialize an empty Map. Loop index i from 0 to N-1: let complement = target - nums[i]. If map has complement, return [map.get(complement), i]. Else map.set(nums[i], i). Time complexity O(N), Space complexity O(N).",
-      badge: "Full Walkthrough"
+      step: '04',
+      title: 'Optimal Walkthrough',
+      text: 'Optimal Algorithm: Initialize an empty Map. Loop index i from 0 to N-1: let complement = target - nums[i]. If map has complement, return [map.get(complement), i]. Else map.set(nums[i], i). Time: O(N), Space: O(N).',
+      tag: 'Post-Attempt Review',
+      tone: 'Canonical Solution',
+      color: 'border-emerald-500/30 text-emerald-300 bg-emerald-500/10'
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-obsidian-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-28 border-b border-slate-800/80">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-500/10 blur-[130px] rounded-full pointer-events-none" />
+      <section className="relative overflow-hidden pt-16 sm:pt-24 pb-20 sm:pb-32 border-b border-white/[0.06]">
+        {/* Ambient Glows */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-indigo-600/15 via-purple-600/10 to-transparent blur-[140px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[350px] h-[250px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-xs font-semibold mb-8 backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5" />
-            Empirical Assessment & Progressive AI Debugging Coach
+          {/* Top Architecture Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-medium mb-8 backdrop-blur-md shadow-glow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Next-Gen Engineering Assessment & AI Debugging Sandbox</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mx-auto mb-6">
+          {/* Main Headline */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.08] max-w-4xl mx-auto mb-6">
             Debug Smarter. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-indigo-100 to-indigo-400">
               Build Skills. Prove Your Progress.
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-            BugQuest AI pairs isolated, authentic code execution assessment with an AI coaching engine that gives progressive hints instead of spoiling answers. Generate shareable, evidence-backed workforce-readiness reports.
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+            BugQuest AI pairs <span className="text-slate-200 font-medium">isolated code execution assessment</span> with a 4-tier pedagogical AI coach that refuses to spoil solutions. Track verified algorithmic evidence and export consent-controlled readiness reports.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
             <Link
               to="/challenges"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02]"
+              className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-sm shadow-glow-md transition-all duration-200 hover:scale-[1.02]"
             >
-              Start Debugging Challenges
-              <ArrowRight className="w-4 h-4" />
+              <Terminal className="w-4 h-4" />
+              <span>Explore Challenge Library</span>
+              <ArrowRight className="w-4 h-4 ml-0.5" />
             </Link>
             <Link
               to="/register"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-200 font-semibold transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/[0.1] bg-obsidian-850/80 hover:bg-obsidian-800 hover:border-white/[0.2] text-slate-200 font-semibold text-sm transition-all"
             >
-              Create Learner Account
+              <span>Create Free Account</span>
             </Link>
           </div>
 
-          {/* Value Badges */}
-          <div className="mt-14 pt-10 border-t border-slate-800/60 max-w-3xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-medium text-slate-400">
-            <div className="flex items-center justify-center gap-2">
+          {/* System Guarantees Bar */}
+          <div className="mt-16 pt-8 border-t border-white/[0.06] max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-medium text-slate-400">
+            <div className="flex items-center justify-center gap-2 py-1">
               <Cpu className="w-4 h-4 text-indigo-400" />
-              <span>Isolated Execution Sandbox</span>
+              <span>Subprocess Sandbox</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 py-1">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Private Hidden Test Cases</span>
+              <span>Private Test Isolation</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>4-Tier Progressive Hints</span>
+            <div className="flex items-center justify-center gap-2 py-1">
+              <BrainCircuit className="w-4 h-4 text-sky-400" />
+              <span>4-Tier Pedagogical Hints</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <Award className="w-4 h-4 text-sky-400" />
-              <span>Verified Readiness Reports</span>
+            <div className="flex items-center justify-center gap-2 py-1">
+              <Fingerprint className="w-4 h-4 text-amber-400" />
+              <span>Cryptographic Dossiers</span>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* Interactive AI Coach Demo */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">
-            Never Get Blocked. Never Get Spoiled.
-          </h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            Experience our 4-level progressive debugging coach. It analyzes error diagnostics and guides you through independent problem-solving step by step.
-          </p>
-        </div>
-
-        <div className="quest-card p-6 md:p-8 max-w-4xl mx-auto border-indigo-500/20 bg-slate-900/90 glow-indigo">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <Code2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white text-sm">Two Sum Target Finder</h3>
-                <span className="text-xs text-slate-400">Error: Time Limit Exceeded on 10,000 items</span>
-              </div>
-            </div>
-
-            {/* Hint level buttons */}
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-              {(['nudge', 'direction', 'debugging_guidance', 'detailed_explanation'] as const).map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setActiveHintLevel(level)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    activeHintLevel === level
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {level === 'debugging_guidance' ? 'Guidance' : level === 'detailed_explanation' ? 'Walkthrough' : level.charAt(0).toUpperCase() + level.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="py-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs uppercase font-bold tracking-wider text-indigo-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                {demoHints[activeHintLevel].title}
-              </span>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                {demoHints[activeHintLevel].badge}
-              </span>
-            </div>
-
-            <p className="text-sm text-slate-200 leading-relaxed font-mono bg-slate-950/80 p-4 rounded-xl border border-slate-800/80">
-              {demoHints[activeHintLevel].text}
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Pedagogical Principle: Hints graduate based on learner struggle and explicit request.</span>
-            <Link to="/challenges" className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
-              Try in Workspace <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* Feature Pillars */}
-      <section className="py-20 bg-slate-950/60 border-t border-slate-800/80">
+      {/* Interactive Progressive Coach Showcase */}
+      <section className="py-20 bg-obsidian-900/60 border-b border-white/[0.06] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white tracking-tight mb-3">
-              The Four Pillars of BugQuest AI
+          
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-indigo-400 mb-2">
+              Pedagogical Coaching Architecture
             </h2>
-            <p className="text-slate-400 text-sm max-w-xl mx-auto">
-              Built from first principles for verifiable skill development without shortcuts or inflated metrics.
+            <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              AI Debugging that Teaches, Not Spoils
+            </h3>
+            <p className="text-sm text-slate-400 mt-2">
+              Unlike generic LLM wrappers that dump complete code solutions, BugQuest unlocks progressive tiers tailored to the exact failure point in your test cases.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Interactive Tier Switcher */}
+          <div className="max-w-4xl mx-auto quest-card p-6 sm:p-8 relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500/80" />
+                <span className="w-3 h-3 rounded-full bg-amber-500/80" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                <span className="text-xs font-mono text-slate-400 ml-2">coaching_session_two_sum.py</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                <span>AI Coach: Active</span>
+              </div>
+            </div>
+
+            {/* Level Selector Tabs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+              {(['nudge', 'direction', 'debugging_guidance', 'detailed_explanation'] as const).map((level) => {
+                const info = demoHints[level];
+                const active = activeHintLevel === level;
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setActiveHintLevel(level)}
+                    className={`flex flex-col text-left p-3 rounded-xl border text-xs transition-all ${
+                      active
+                        ? 'border-indigo-500/50 bg-indigo-500/15 text-white shadow-glow-sm'
+                        : 'border-white/[0.06] bg-obsidian-950/60 text-slate-400 hover:border-white/[0.12] hover:text-slate-200'
+                    }`}
+                  >
+                    <span className="font-mono text-[10px] text-indigo-400 font-semibold mb-0.5">
+                      TIER {info.step}
+                    </span>
+                    <span className="font-semibold truncate">{info.title.split(':')[0]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active Tier Output Card */}
+            <div className="rounded-xl border border-white/[0.08] bg-obsidian-950/90 p-5 sm:p-6 transition-all">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${demoHints[activeHintLevel].color}`}>
+                    {demoHints[activeHintLevel].tag}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">
+                    Mode: {demoHints[activeHintLevel].tone}
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-slate-500">Tier {demoHints[activeHintLevel].step} of 04</span>
+              </div>
+
+              <p className="text-sm text-slate-200 leading-relaxed font-normal">
+                {demoHints[activeHintLevel].text}
+              </p>
+
+              <div className="mt-4 pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Preserves learner discovery & cognitive struggle
+                </span>
+                <span className="font-mono text-[11px] text-slate-500">Zero Answer Leakage</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* Bento Grid Feature Matrix */}
+      <section className="py-24 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-indigo-400 mb-2">
+              Engineered for Production
+            </h2>
+            <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              Everything Needed for Genuine Code Verification
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <div className="quest-card p-6 quest-card-hover">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-5">
-                <Cpu className="w-5 h-5" />
+            {/* Bento Card 1 */}
+            <div className="quest-card p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-5">
+                  <Cpu className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white mb-2">Multi-Adapter Code Judge</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Executes learner submissions in an isolated sandbox subprocess. Memory constraints, execution timeouts, and strict security guards isolate untrusted code.
+                </p>
               </div>
-              <h3 className="font-semibold text-white mb-2 text-base">Isolated Assessment</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Code execution runs inside isolated runner environments with strict memory and time boundaries. Authentic test verdicts you can rely on.
-              </p>
+              <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center gap-2 text-xs font-mono text-indigo-300">
+                <span>Supports Python 3 & JS (V8)</span>
+              </div>
             </div>
 
-            <div className="quest-card p-6 quest-card-hover">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-5">
-                <Sparkles className="w-5 h-5" />
+            {/* Bento Card 2 */}
+            <div className="quest-card p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white mb-2">Private Hidden Boundary Tests</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Public examples verify basic functionality. Private hidden test cases evaluate extreme bounds, negative indices, and adversarial edge cases without client leakage.
+                </p>
               </div>
-              <h3 className="font-semibold text-white mb-2 text-base">Progressive Coaching</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Rather than giving solutions away, our AI acts like a senior staff engineer—nudging your thinking, testing assumptions, and teaching edge case analysis.
-              </p>
+              <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center gap-2 text-xs font-mono text-emerald-300">
+                <span>Tamper-Resistant Verification</span>
+              </div>
             </div>
 
-            <div className="quest-card p-6 quest-card-hover">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-5">
-                <Layers className="w-5 h-5" />
+            {/* Bento Card 3 */}
+            <div className="quest-card p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-5">
+                  <Fingerprint className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white mb-2">Cryptographic Share Dossiers</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Learners generate shareable workforce dossiers with 64-character unguessable cryptographic tokens, privacy toggles, and instant revocation for technical recruiters.
+                </p>
               </div>
-              <h3 className="font-semibold text-white mb-2 text-base">Evidence-Based Tracking</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Scores are calculated strictly from verified test outcomes across topics like Arrays, Two Pointers, Stacks, and Hash Maps. Never arbitrary badges.
-              </p>
-            </div>
-
-            <div className="quest-card p-6 quest-card-hover">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-5">
-                <Award className="w-5 h-5" />
+              <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center gap-2 text-xs font-mono text-amber-300">
+                <span>Instant Revocable Access</span>
               </div>
-              <h3 className="font-semibold text-white mb-2 text-base">Consent-Driven Reports</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Generate clean, professional workforce-readiness reports. Share with educators or reviewers using revocable, tamper-resistant 64-character tokens.
-              </p>
             </div>
 
           </div>
+
         </div>
       </section>
 
-      {/* Assessment Integrity Notice */}
-      <section className="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <Lock className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-base font-semibold text-white">Ethical Assessment & Fair Evaluation</h4>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              BugQuest AI maintains transparent boundaries: the code judge is the sole authority on correctness, while the AI functions strictly as an educational mentor. We never infer unvalidated personal traits, personality, or commercial job guarantees from coding tests.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Final Call to Action */}
-      <section className="py-20 border-t border-slate-800 text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
-            Ready to upgrade your engineering skills?
-          </h2>
-          <p className="text-slate-400 text-base max-w-xl mx-auto mb-8">
-            Solve curated challenges, inspect errors with an AI coach, and establish a verifiable track record of technical competence.
+      {/* Bottom CTA Banner */}
+      <section className="py-20 border-t border-white/[0.06] bg-gradient-to-b from-obsidian-900 to-obsidian-950 text-center relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
+            Ready to Prove Your Algorithmic Competency?
+          </h3>
+          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto mb-8">
+            Access authentic coding challenges, progressive debugging assistance, and real-time skill evidence today.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               to="/challenges"
-              className="px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-glow-md transition-all duration-200 hover:scale-[1.02]"
             >
-              Explore Challenge Library
+              Start Practice Session
             </Link>
             <Link
               to="/login"
-              className="px-7 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold transition-all"
+              className="px-6 py-3 rounded-xl border border-white/[0.1] bg-obsidian-850 hover:bg-obsidian-800 text-slate-200 font-semibold text-sm transition-all"
             >
-              Sign In to Dashboard
+              Sign In to Your Account
             </Link>
           </div>
         </div>
