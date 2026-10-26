@@ -69,8 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/share/{token}/revoke', [ReadinessReportController::class, 'revokeShareToken']);
     });
 
-    // Administrative Management
+    // Administrative & Instructor Authoring Management
     Route::prefix('admin')->group(function () {
-        Route::post('/challenges', [ChallengeController::class, 'adminStore']);
+        Route::post('/challenges', [ChallengeController::class, 'store']);
+        Route::post('/challenges/{id}/validate', [ChallengeController::class, 'validateChallenge']);
     });
 });

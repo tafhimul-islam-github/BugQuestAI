@@ -40,23 +40,23 @@ export const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/[0.07] bg-obsidian-950/80 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-sm transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Brand Logo & Tag */}
+          {/* Brand Logo & Status Tag */}
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/10 to-transparent border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:border-indigo-400 group-hover:scale-105 group-hover:shadow-glow-sm transition-all duration-300">
-                  <Terminal className="w-4 h-4 text-indigo-300" />
+                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-blue-sm group-hover:bg-blue-700 group-hover:scale-105 transition-all duration-200">
+                  <Terminal className="w-5 h-5" />
                 </div>
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-obsidian-950 animate-pulse" />
+                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5 font-bold text-base text-white tracking-tight">
+                <div className="flex items-center gap-1.5 font-bold text-lg text-slate-900 tracking-tight">
                   <span>BugQuest</span>
-                  <span className="px-1.5 py-0.2 text-[10px] font-mono font-bold tracking-wider rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+                  <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-wider rounded bg-blue-50 text-blue-600 border border-blue-200/60 uppercase">
                     AI
                   </span>
                 </div>
@@ -64,8 +64,8 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Sandbox Status Badge */}
-            <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.06] text-[11px] font-medium text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-600">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Isolated Sandbox Online</span>
             </div>
           </div>
@@ -80,16 +80,16 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-150 ${
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-normal transition-all duration-150 ${
                     active
-                      ? 'text-white bg-white/[0.08] border border-white/[0.12] shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                      ? 'text-blue-700 bg-blue-50/80 border border-blue-200/60 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-indigo-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
                   <span>{link.name}</span>
                   {active && (
-                    <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-500 rounded-full" />
+                    <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-blue-600 rounded-full" />
                   )}
                 </Link>
               );
@@ -100,8 +100,8 @@ export const Navbar: React.FC = () => {
                 to="/admin/challenges"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   isActive('/admin/challenges')
-                    ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
-                    : 'text-amber-400/80 hover:text-amber-300 hover:bg-white/[0.04]'
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                    : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50/60'
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -116,71 +116,71 @@ export const Navbar: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-white/[0.08] bg-obsidian-850/80 hover:border-white/[0.16] hover:bg-obsidian-800 text-xs font-medium text-slate-200 transition-all shadow-sm"
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-all shadow-sm"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="max-w-[120px] truncate">{user.name}</span>
+                  <span className="max-w-[120px] truncate font-medium text-slate-800">{user.name}</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-60 rounded-xl bg-obsidian-850 border border-white/[0.1] shadow-2xl backdrop-blur-2xl py-1.5 z-50 animate-fade-in">
-                    <div className="px-3.5 py-2.5 border-b border-white/[0.06]">
-                      <p className="text-xs font-semibold text-white truncate">{user.name}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-fade-in">
+                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/60 rounded-t-2xl">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">{user.email}</p>
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-blue-100 text-blue-700 border border-blue-200/80">
                           {user.role}
                         </span>
-                        <span className="text-[10px] text-slate-400 truncate">
+                        <span className="text-[11px] text-slate-500 truncate">
                           {user.target_role || 'Developer'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="py-1">
+                    <div className="py-1.5 px-1.5">
                       <Link
                         to="/dashboard"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50/70 rounded-xl transition-colors"
                       >
-                        <Compass className="w-3.5 h-3.5 text-slate-400" />
+                        <Compass className="w-4 h-4 text-slate-400" />
                         Dashboard
                       </Link>
                       <Link
                         to="/skills"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50/70 rounded-xl transition-colors"
                       >
-                        <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
+                        <BarChart3 className="w-4 h-4 text-slate-400" />
                         Skill Analytics
                       </Link>
                       <Link
                         to="/reports"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50/70 rounded-xl transition-colors"
                       >
-                        <Award className="w-3.5 h-3.5 text-amber-400" />
-                        Workforce Readiness
+                        <Award className="w-4 h-4 text-amber-500" />
+                        Workforce Dossier
                       </Link>
                       <Link
                         to="/settings"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50/70 rounded-xl transition-colors"
                       >
-                        <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+                        <UserIcon className="w-4 h-4 text-slate-400" />
                         Account Settings
                       </Link>
                     </div>
 
-                    <div className="pt-1 border-t border-white/[0.06]">
+                    <div className="pt-1 px-1.5 border-t border-slate-100">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
+                        <LogOut className="w-4 h-4" />
                         Sign Out
                       </button>
                     </div>
@@ -191,13 +191,13 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <Link
                   to="/login"
-                  className="px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-semibold shadow-glow-sm transition-all duration-200 hover:scale-[1.02]"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-blue-sm transition-all duration-150 hover:scale-[1.02]"
                 >
                   <span>Get Started</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -210,7 +210,7 @@ export const Navbar: React.FC = () => {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] focus:outline-none"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -221,7 +221,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-white/[0.08] bg-obsidian-900/95 backdrop-blur-2xl px-4 pt-2 pb-6 space-y-2 animate-fade-in">
+        <div className="md:hidden border-b border-slate-200 bg-white/95 backdrop-blur-xl px-4 pt-2 pb-6 space-y-2 animate-fade-in shadow-lg">
           {navLinks.map((link) => {
             if (link.authOnly && !user) return null;
             const Icon = link.icon;
@@ -232,46 +232,46 @@ export const Navbar: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive(link.path)
-                    ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
-                    : 'text-slate-300 hover:bg-white/[0.04]'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
+                    : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="w-4 h-4 text-indigo-400" />
+                <Icon className="w-4 h-4 text-blue-600" />
                 {link.name}
               </Link>
             );
           })}
 
           {user ? (
-            <div className="pt-4 mt-2 border-t border-white/[0.06] space-y-2">
+            <div className="pt-4 mt-2 border-t border-slate-100 space-y-2">
               <div className="px-3.5 py-2">
-                <p className="text-xs font-semibold text-white">{user.name}</p>
-                <p className="text-xs text-slate-400">{user.email}</p>
+                <p className="text-xs font-bold text-slate-900">{user.name}</p>
+                <p className="text-xs text-slate-500">{user.email}</p>
               </div>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-500/10 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </button>
             </div>
           ) : (
-            <div className="pt-4 mt-2 border-t border-white/[0.06] grid grid-cols-2 gap-2">
+            <div className="pt-4 mt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center py-2.5 rounded-xl border border-white/[0.1] text-xs font-semibold text-slate-200"
+                className="flex items-center justify-center py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center py-2.5 rounded-xl bg-indigo-600 text-xs font-semibold text-white"
+                className="flex items-center justify-center py-2.5 rounded-xl bg-blue-600 text-xs font-semibold text-white shadow-sm"
               >
                 Get Started
               </Link>

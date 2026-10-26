@@ -16,6 +16,10 @@ class Submission extends Model
         'challenge_id',
         'language',
         'code',
+        'modified_files',
+        'patch_diff',
+        'hypothesis',
+        'evidence_records',
         'status',
         'pass_count',
         'total_count',
@@ -28,6 +32,9 @@ class Submission extends Model
     ];
 
     protected $casts = [
+        'modified_files' => 'array',
+        'hypothesis' => 'array',
+        'evidence_records' => 'array',
         'public_test_results' => 'array',
         'pass_count' => 'integer',
         'total_count' => 'integer',

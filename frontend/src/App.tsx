@@ -35,7 +35,7 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <div className="flex flex-col min-h-screen bg-obsidian-950 text-slate-100">
+          <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-900">
             <Navbar />
             <main className="flex-1">
               <Routes>
