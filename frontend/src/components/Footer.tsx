@@ -49,6 +49,11 @@ export const Footer: React.FC = () => {
                   Readiness Reports
                 </Link>
               </li>
+              <li>
+                <Link to="/docs" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">
+                  Live Architecture & Docs (/docs)
+                </Link>
+              </li>
             </ul>
           </div>
 

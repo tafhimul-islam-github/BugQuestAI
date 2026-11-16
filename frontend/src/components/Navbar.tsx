@@ -13,7 +13,8 @@ import {
   X, 
   ShieldCheck,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  BookOpen
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -25,6 +26,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Challenges', path: '/challenges', icon: Terminal },
+    { name: 'Architecture & Docs', path: '/docs', icon: BookOpen },
     { name: 'Dashboard', path: '/dashboard', icon: Compass, authOnly: true },
     { name: 'Skills & Evidence', path: '/skills', icon: BarChart3, authOnly: true },
     { name: 'Learning Path', path: '/recommendations', icon: Sparkles, authOnly: true },

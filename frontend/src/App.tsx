@@ -19,6 +19,7 @@ import { ReadinessReportPage } from './pages/ReadinessReportPage';
 import { PublicSharedReportPage } from './pages/PublicSharedReportPage';
 import { AdminChallengePage } from './pages/AdminChallengePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { DocsPage } from './pages/DocsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/challenges" element={<ChallengeLibraryPage />} />
+                <Route path="/docs" element={<DocsPage />} />
                 <Route path="/challenge/:slug" element={<CodingWorkspacePage />} />
                 <Route path="/challenges/:slug" element={<CodingWorkspacePage />} />
                 <Route path="/report/shared/:token" element={<PublicSharedReportPage />} />
