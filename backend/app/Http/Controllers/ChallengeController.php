@@ -128,15 +128,20 @@ class ChallengeController extends Controller
             $userSubmissions = Submission::where('user_id', $user->id)
                 ->where('challenge_id', $challenge->id)
                 ->orderByDesc('created_at')
-                ->take(10)
+                ->take(20)
                 ->get()
                 ->map(fn($s) => [
                     'id' => $s->id,
                     'status' => $s->status,
                     'language' => $s->language,
+                    'code' => $s->code,
+                    'modified_files' => $s->modified_files,
                     'pass_count' => $s->pass_count,
                     'total_count' => $s->total_count,
                     'execution_time_ms' => $s->execution_time_ms,
+                    'memory_kb' => $s->memory_kb,
+                    'error_output' => $s->error_output,
+                    'public_test_results' => $s->public_test_results,
                     'patch_diff' => $s->patch_diff,
                     'hypothesis' => $s->hypothesis,
                     'created_at' => $s->created_at->toIso8601String(),
@@ -147,6 +152,27 @@ class ChallengeController extends Controller
                 ->where('status', 'accepted')
                 ->exists();
         }
+
+        // Community submissions: show other users' submission activity & metrics for this problem,
+        // but NEVER include code, modified_files, or patch_diff to prevent solution leakage.
+        $communitySubmissions = Submission::with('user:id,name,role,target_role')
+            ->where('challenge_id', $challenge->id)
+            ->orderByDesc('created_at')
+            ->take(25)
+            ->get()
+            ->map(fn($s) => [
+                'id' => $s->id,
+                'user_name' => $s->user ? $s->user->name : 'Anonymous Learner',
+                'user_role' => $s->user ? ($s->user->target_role ?: ucfirst($s->user->role)) : 'Developer',
+                'is_own' => $user ? ($s->user_id === $user->id) : false,
+                'status' => $s->status,
+                'language' => $s->language,
+                'pass_count' => $s->pass_count,
+                'total_count' => $s->total_count,
+                'execution_time_ms' => $s->execution_time_ms,
+                'memory_kb' => $s->memory_kb,
+                'created_at' => $s->created_at->toIso8601String(),
+            ]);
 
         // Clean repository files: NEVER leak reference_patch or hidden test files to learners
         $repositoryFiles = $challenge->repository_files ?? [];
@@ -177,6 +203,7 @@ class ChallengeController extends Controller
                 'public_test_cases' => $publicTestCases,
                 'is_solved' => $isSolved,
                 'user_submissions' => $userSubmissions,
+                'community_submissions' => $communitySubmissions,
             ]
         ]);
     }

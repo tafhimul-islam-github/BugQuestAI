@@ -2088,7 +2088,407 @@ JS
                         'content' => 'In `src/order_parser.js`, preprocess the raw JSON string with regex replacement to wrap numeric tokens with 15+ digits in quotation marks, preserving their exact digits as strings.'
                     ]
                 ],
+                'editorial' => "### Preserving 64-Bit Snowflake IDs in JavaScript\nJavaScript numbers are IEEE-754 double-precision floats with 53 bits of mantissa (`Number.MAX_SAFE_INTEGER = 9007199254740991`). Pre-quoting 15+ digit integers as strings prior to `JSON.parse` prevents silent precision loss.",
                 'order_index' => 10,
+            ],
+
+            // -----------------------------------------------------------------
+            // Quest 11: Microservice Circuit Breaker Half-Open Deadlock
+            // -----------------------------------------------------------------
+            [
+                'slug' => 'circuit-breaker-half-open-deadlock',
+                'title' => 'Microservice Circuit Breaker Permanently Locks in OPEN State After Cooldown',
+                'difficulty' => 'advanced',
+                'category' => 'concurrency',
+                'framework' => 'Node.js',
+                'investigation_time_minutes' => 30,
+                'description' => "After a brief downstream database hiccup trips our Circuit Breaker into the OPEN state, the service never recovers—even hours after the database is healthy again. Engineers must restart pods manually to clear the outage.",
+                'bug_report' => [
+                    'issue_title' => 'canRequest() refreshes openedAt timestamp on every rejected call during OPEN state',
+                    'symptoms' => 'Once failureThreshold (3 failures) is reached, the circuit breaker trips to OPEN with a 100ms cooldown. However, periodic health probes calling canRequest() reset `this.openedAt = Date.now()`, preventing cooldown expiration and locking the breaker OPEN forever.',
+                    'expected_behavior' => 'When cooldownMs elapses since the circuit first opened, `canRequest()` must transition state to `HALF_OPEN` and allow a probe request through. Successful execution in `HALF_OPEN` must reset `state = "CLOSED"` and `failures = 0`.',
+                    'actual_behavior' => 'In `src/circuit_breaker.js`, `canRequest()` overwrites `this.openedAt = now` when still inside the cooldown window, and `recordSuccess()` forgets to reset `this.failures = 0`.',
+                    'reproduction_steps' => [
+                        '1. Record 3 consecutive failures to trip breaker into OPEN state.',
+                        '2. Wait past cooldownMs (e.g., 120ms).',
+                        '3. Call canRequest() and recordSuccess(). Breaker fails to recover cleanly.'
+                    ],
+                    'environment' => 'Node.js v18+, CommonJS modules',
+                    'scope_boundary' => 'Only edit `src/circuit_breaker.js`. Do not modify test runner files.',
+                ],
+                'repository_files' => [
+                    [
+                        'path' => 'src/circuit_breaker.js',
+                        'is_editable' => true,
+                        'language' => 'javascript',
+                        'content' => <<<'JS'
+class CircuitBreaker {
+  constructor(failureThreshold = 3, cooldownMs = 100) {
+    this.failureThreshold = failureThreshold;
+    this.cooldownMs = cooldownMs;
+    this.state = 'CLOSED'; // CLOSED | OPEN | HALF_OPEN
+    this.failures = 0;
+    this.openedAt = 0;
+  }
+
+  canRequest(now = Date.now()) {
+    if (this.state === 'CLOSED' || this.state === 'HALF_OPEN') {
+      return true;
+    }
+
+    if (this.state === 'OPEN') {
+      // BUG: Comparison is inverted (< instead of >=) and mutates openedAt on rejected checks!
+      if (now - this.openedAt < this.cooldownMs) {
+        this.openedAt = now;
+        return false;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  recordSuccess() {
+    this.state = 'CLOSED';
+    // BUG: forgets to reset this.failures = 0, so a single future failure immediately re-opens!
+  }
+
+  recordFailure(now = Date.now()) {
+    this.failures += 1;
+    if (this.failures >= this.failureThreshold || this.state === 'HALF_OPEN') {
+      this.state = 'OPEN';
+      this.openedAt = now;
+    }
+  }
+}
+
+module.exports = { CircuitBreaker };
+JS
+                    ],
+                    [
+                        'path' => 'tests/runner.cjs',
+                        'is_editable' => false,
+                        'language' => 'javascript',
+                        'content' => <<<'JS'
+const { CircuitBreaker } = require('../src/circuit_breaker');
+
+function runTests() {
+  const results = [];
+
+  // Test 1: Trips to OPEN after reaching failureThreshold
+  try {
+    const cb = new CircuitBreaker(3, 1000);
+    cb.recordFailure(100);
+    cb.recordFailure(110);
+    cb.recordFailure(120);
+    const blocked = cb.canRequest(500) === false && cb.state === 'OPEN';
+    results.push({ name: 'Trips to OPEN after 3 consecutive failures', passed: blocked, error: blocked ? null : `Expected OPEN & blocked, got state=${cb.state}`, is_hidden: false });
+  } catch (err) {
+    results.push({ name: 'Trips to OPEN after 3 consecutive failures', passed: false, error: err.message, is_hidden: false });
+  }
+
+  // Test 2: Transitions to HALF_OPEN after cooldown elapsed (reproduction)
+  try {
+    const cb = new CircuitBreaker(3, 1000);
+    cb.recordFailure(1000);
+    cb.recordFailure(1010);
+    cb.recordFailure(1020); // openedAt = 1020
+
+    // Check during cooldown (at t=1500) -> false
+    const during = cb.canRequest(1500);
+    // Check after cooldown (at t=2100, elapsed 1080ms >= 1000ms) -> true & HALF_OPEN
+    const after = cb.canRequest(2100);
+    const ok = during === false && after === true && cb.state === 'HALF_OPEN';
+    results.push({
+      name: 'Transitions from OPEN to HALF_OPEN once cooldownMs elapses',
+      passed: ok,
+      error: ok ? null : `Expected during=false, after=true, state=HALF_OPEN; got during=${during}, after=${after}, state=${cb.state}`,
+      is_hidden: false
+    });
+  } catch (err) {
+    results.push({ name: 'Transitions from OPEN to HALF_OPEN once cooldownMs elapses', passed: false, error: err.message, is_hidden: false });
+  }
+
+  // Test 3: Hidden test - recordSuccess resets failure counter so single failure doesn't re-trip
+  try {
+    const cb = new CircuitBreaker(3, 1000);
+    cb.recordFailure(100);
+    cb.recordFailure(200);
+    cb.recordFailure(300);
+    cb.canRequest(1500); // HALF_OPEN
+    cb.recordSuccess();  // CLOSED, failures = 0
+    cb.recordFailure(1600); // 1 failure (< 3)
+    const ok = cb.state === 'CLOSED' && cb.failures === 1;
+    results.push({ name: 'Hidden: Full recovery resets failure count on HALF_OPEN success', passed: ok, error: ok ? null : `Expected CLOSED with 1 failure, got state=${cb.state}, failures=${cb.failures}`, is_hidden: true });
+  } catch (err) {
+    results.push({ name: 'Hidden: Full recovery resets failure count on HALF_OPEN success', passed: false, error: err.message, is_hidden: true });
+  }
+
+  console.log('BUGQUEST_REPORT_START');
+  console.log(JSON.stringify({ tests: results }));
+  console.log('BUGQUEST_REPORT_END');
+
+  const allPassed = results.every(r => r.passed);
+  process.exit(allPassed ? 0 : 1);
+}
+
+runTests();
+JS
+                    ]
+                ],
+                'reference_patch' => [
+                    [
+                        'path' => 'src/circuit_breaker.js',
+                        'content' => <<<'JS'
+class CircuitBreaker {
+  constructor(failureThreshold = 3, cooldownMs = 100) {
+    this.failureThreshold = failureThreshold;
+    this.cooldownMs = cooldownMs;
+    this.state = 'CLOSED';
+    this.failures = 0;
+    this.openedAt = 0;
+  }
+
+  canRequest(now = Date.now()) {
+    if (this.state === 'CLOSED' || this.state === 'HALF_OPEN') {
+      return true;
+    }
+
+    if (this.state === 'OPEN') {
+      if (now - this.openedAt >= this.cooldownMs) {
+        this.state = 'HALF_OPEN';
+        return true;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  recordSuccess() {
+    this.state = 'CLOSED';
+    this.failures = 0;
+  }
+
+  recordFailure(now = Date.now()) {
+    this.failures += 1;
+    if (this.failures >= this.failureThreshold || this.state === 'HALF_OPEN') {
+      this.state = 'OPEN';
+      this.openedAt = now;
+    }
+  }
+}
+
+module.exports = { CircuitBreaker };
+JS
+                    ]
+                ],
+                'entrypoint_test' => 'tests/runner.cjs',
+                'supported_languages' => ['javascript'],
+                'topics' => ['Resilience', 'Circuit Breaker', 'State Machine', 'Microservices'],
+                'hints' => [
+                    [
+                        'level' => 'nudge',
+                        'title' => 'State machine transitions',
+                        'content' => 'When the breaker is OPEN, what condition allows it to transition to HALF_OPEN?'
+                    ],
+                    [
+                        'level' => 'direction',
+                        'title' => 'Do not reset openedAt during rejected probes',
+                        'content' => 'In `canRequest()`, check `if (now - this.openedAt >= this.cooldownMs)`. If true, set `this.state = "HALF_OPEN"` and return `true`.'
+                    ],
+                    [
+                        'level' => 'debugging_guidance',
+                        'title' => 'Reset failure counter on recovery',
+                        'content' => 'In `recordSuccess()`, make sure to set `this.failures = 0` alongside `this.state = "CLOSED"`.'
+                    ],
+                    [
+                        'level' => 'detailed_explanation',
+                        'title' => 'Full fix walkthrough',
+                        'content' => 'Remove `this.openedAt = now` inside `canRequest()`. Transition to `HALF_OPEN` and return `true` when `now - this.openedAt >= this.cooldownMs`. In `recordSuccess()`, reset `this.failures = 0`.'
+                    ]
+                ],
+                'editorial' => "### Circuit Breaker State Machine\nA circuit breaker requires three clean states: `CLOSED`, `OPEN`, and `HALF_OPEN`. Never mutate `openedAt` during failed cooldown checks, and always reset accumulated failure counters when a `HALF_OPEN` probe succeeds.",
+                'order_index' => 11,
+            ],
+
+            // -----------------------------------------------------------------
+            // Quest 12: Multi-Tenant RBAC Permission Wildcard Escalation
+            // -----------------------------------------------------------------
+            [
+                'slug' => 'rbac-permission-wildcard-escalation',
+                'title' => 'Security: Multi-Tenant RBAC Matcher Grants Admin Access on Prefix Collision',
+                'difficulty' => 'advanced',
+                'category' => 'auth_security',
+                'framework' => 'Node.js',
+                'investigation_time_minutes' => 30,
+                'description' => "Penetration testers discovered a privilege escalation vulnerability in our RBAC policy engine: a user granted `billing:read` or `org:*` prefix permissions can accidentally match unrelated scopes or bypass segment boundaries.",
+                'bug_report' => [
+                    'issue_title' => 'startsWith() wildcard prefix check fails to enforce colon segment boundary',
+                    'symptoms' => 'A user with permission `reports:*` or `user:read` is evaluated using loose prefix matching (`requiredScope.startsWith(prefix)`), allowing `user:read` to authorize `user:read_secrets`!',
+                    'expected_behavior' => 'Exact scopes (without `:*`) must only match identical strings (`grant === requiredScope`). Wildcard scopes ending in `:*` (e.g., `billing:*`) must only match scopes sharing that exact colon-delimited namespace (`billing:read`, `billing:write`), never `billing_admin:delete`.',
+                    'actual_behavior' => 'In `src/rbac.js`, `hasPermission()` strips `*` and calls `requiredScope.startsWith(base)`, allowing `user:read` to match `user:read_private_keys`.',
+                    'reproduction_steps' => [
+                        '1. Grant user `["user:read", "billing:*"]`.',
+                        '2. Check `hasPermission(grants, "user:read_secrets")` -> returns true (VULNERABILITY).',
+                        '3. Check `hasPermission(grants, "billing_admin:refund")` -> returns true (VULNERABILITY).'
+                    ],
+                    'environment' => 'Node.js v18+, CommonJS modules',
+                    'scope_boundary' => 'Only edit `src/rbac.js`. Do not modify test runner files.',
+                ],
+                'repository_files' => [
+                    [
+                        'path' => 'src/rbac.js',
+                        'is_editable' => true,
+                        'language' => 'javascript',
+                        'content' => <<<'JS'
+/**
+ * Evaluates whether a list of granted permission scopes authorizes requiredScope.
+ * @param {string[]} grantedScopes
+ * @param {string} requiredScope
+ * @returns {boolean}
+ */
+function hasPermission(grantedScopes, requiredScope) {
+  if (!Array.isArray(grantedScopes) || !requiredScope) return false;
+
+  for (const grant of grantedScopes) {
+    if (grant === '*') return true;
+
+    // BUG: Replaces '*' and uses startsWith unconditionally!
+    // 1. Even non-wildcard 'user:read' matches 'user:read_secrets'!
+    // 2. Wildcard 'billing*' without trailing colon check matches 'billing_admin:write'!
+    const prefix = grant.replace('*', '').replace(/:$/, '');
+    if (requiredScope.startsWith(prefix)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+module.exports = { hasPermission };
+JS
+                    ],
+                    [
+                        'path' => 'tests/runner.cjs',
+                        'is_editable' => false,
+                        'language' => 'javascript',
+                        'content' => <<<'JS'
+const { hasPermission } = require('../src/rbac');
+
+function runTests() {
+  const results = [];
+
+  // Test 1: Exact permission and valid wildcard
+  try {
+    const grants = ['users:read', 'billing:*'];
+    const ok1 = hasPermission(grants, 'users:read') === true;
+    const ok2 = hasPermission(grants, 'billing:invoices') === true;
+    const ok = ok1 && ok2;
+    results.push({ name: 'Authorizes exact scope and valid namespace wildcard', passed: ok, error: ok ? null : 'Failed valid authorization', is_hidden: false });
+  } catch (err) {
+    results.push({ name: 'Authorizes exact scope and valid namespace wildcard', passed: false, error: err.message, is_hidden: false });
+  }
+
+  // Test 2: Blocks prefix collision privilege escalation (reproduction)
+  try {
+    const grants = ['users:read', 'billing:*'];
+    const leak1 = hasPermission(grants, 'users:read_secrets');
+    const leak2 = hasPermission(grants, 'billing_admin:wipe');
+    const ok = leak1 === false && leak2 === false;
+    results.push({
+      name: 'Blocks prefix-collision privilege escalation on exact and wildcard scopes',
+      passed: ok,
+      error: ok ? null : `Privilege escalation detected: users:read_secrets=${leak1}, billing_admin:wipe=${leak2}`,
+      is_hidden: false
+    });
+  } catch (err) {
+    results.push({ name: 'Blocks prefix-collision privilege escalation on exact and wildcard scopes', passed: false, error: err.message, is_hidden: false });
+  }
+
+  // Test 3: Superadmin '*' and nested namespaces (hidden)
+  try {
+    const okSuper = hasPermission(['*'], 'system:nuclear:launch') === true;
+    const okNested = hasPermission(['org:team:*'], 'org:team:members') === true;
+    const blockSibling = hasPermission(['org:team:*'], 'org:team_ two:members') === false;
+    const ok = okSuper && okNested && blockSibling;
+    results.push({ name: 'Hidden: Enforces strict colon boundary on multi-segment wildcards', passed: ok, error: ok ? null : 'Failed nested namespace boundary check', is_hidden: true });
+  } catch (err) {
+    results.push({ name: 'Hidden: Enforces strict colon boundary on multi-segment wildcards', passed: false, error: err.message, is_hidden: true });
+  }
+
+  console.log('BUGQUEST_REPORT_START');
+  console.log(JSON.stringify({ tests: results }));
+  console.log('BUGQUEST_REPORT_END');
+
+  const allPassed = results.every(r => r.passed);
+  process.exit(allPassed ? 0 : 1);
+}
+
+runTests();
+JS
+                    ]
+                ],
+                'reference_patch' => [
+                    [
+                        'path' => 'src/rbac.js',
+                        'content' => <<<'JS'
+/**
+ * Evaluates whether a list of granted permission scopes authorizes requiredScope.
+ * @param {string[]} grantedScopes
+ * @param {string} requiredScope
+ * @returns {boolean}
+ */
+function hasPermission(grantedScopes, requiredScope) {
+  if (!Array.isArray(grantedScopes) || !requiredScope) return false;
+
+  for (const grant of grantedScopes) {
+    if (grant === '*' || grant === requiredScope) {
+      return true;
+    }
+
+    if (grant.endsWith(':*')) {
+      const namespacePrefix = grant.slice(0, -1); // keeps trailing ':' e.g. 'billing:'
+      if (requiredScope.startsWith(namespacePrefix)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+module.exports = { hasPermission };
+JS
+                    ]
+                ],
+                'entrypoint_test' => 'tests/runner.cjs',
+                'supported_languages' => ['javascript'],
+                'topics' => ['Security', 'RBAC', 'Access Control', 'Prefix Matching'],
+                'hints' => [
+                    [
+                        'level' => 'nudge',
+                        'title' => 'Distinguish exact grants from wildcard grants',
+                        'content' => 'Should a permission without `:*` ever use `.startsWith()`?'
+                    ],
+                    [
+                        'level' => 'direction',
+                        'title' => 'Preserve the colon separator on wildcards',
+                        'content' => 'If a grant ends with `:*` (like `billing:*`), its valid prefix is `billing:` (including the colon), not `billing`.'
+                    ],
+                    [
+                        'level' => 'debugging_guidance',
+                        'title' => 'Check exact equality first, then `.endsWith(":*")`',
+                        'content' => 'If `grant === requiredScope`, return `true`. If `grant.endsWith(":*")`, check `requiredScope.startsWith(grant.slice(0, -1))`.'
+                    ],
+                    [
+                        'level' => 'detailed_explanation',
+                        'title' => 'Full fix walkthrough',
+                        'content' => 'Only perform prefix matching when `grant.endsWith(":*")`. Keep the trailing colon (`grant.slice(0, -1)`) so `billing:` matches `billing:read` but never `billing_admin:read`.'
+                    ]
+                ],
+                'editorial' => "### Secure Hierarchical RBAC Matching\nPrefix-based authorization checks must always anchor on delimiter boundaries (`:`). Stripping the delimiter before `.startsWith()` creates classic prefix-collision privilege escalation vulnerabilities.",
+                'order_index' => 12,
             ]
         ];
 
@@ -2109,6 +2509,7 @@ JS
                     'supported_languages' => $c['supported_languages'],
                     'topics' => $c['topics'],
                     'hints' => $c['hints'],
+                    'editorial' => $c['editorial'] ?? null,
                     'time_limit_ms' => 2000,
                     'memory_limit_mb' => 128,
                     'order_index' => $c['order_index'],

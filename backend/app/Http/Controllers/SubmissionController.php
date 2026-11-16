@@ -96,6 +96,10 @@ class SubmissionController extends Controller
             'message' => 'Assessment completed',
             'submission' => [
                 'id' => $submission->id,
+                'challenge_id' => $submission->challenge_id,
+                'language' => $submission->language,
+                'code' => $submission->code,
+                'modified_files' => $submission->modified_files,
                 'status' => $submission->status,
                 'pass_count' => $submission->pass_count,
                 'total_count' => $submission->total_count,
