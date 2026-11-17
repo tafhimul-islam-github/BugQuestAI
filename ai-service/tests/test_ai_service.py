@@ -9,7 +9,11 @@ async def test_health_check():
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get("/health")
         assert response.status_code == 200
-        assert response.json()["status"] == "healthy"
+        body = response.json()
+        assert body["status"] == "healthy"
+        assert body["rag_enabled"] is True
+        assert body["mcp_enabled"] is True
+        assert body["mcp_tools_count"] == 4
 
 @pytest.mark.asyncio
 async def test_progressive_hint_nudge_does_not_reveal_solution():
@@ -33,6 +37,8 @@ async def test_progressive_hint_nudge_does_not_reveal_solution():
         assert len(data["explanation"]) > 0
         assert isinstance(data["next_steps"], list)
         assert data["confidence"] > 0.0
+        assert len(data["retrieved_context"]) >= 1
+        assert len(data["pipeline_trace"]) >= 4
 
 @pytest.mark.asyncio
 async def test_progressive_hint_direction_focuses_on_concepts():
@@ -53,6 +59,7 @@ async def test_progressive_hint_direction_focuses_on_concepts():
         data = res.json()
         assert data["hint_level"] == "direction"
         assert "strings" in data["concept_tags"]
+        assert any("two-pointers" in c["id"] for c in data["retrieved_context"])
 
 @pytest.mark.asyncio
 async def test_prompt_injection_resistance():
@@ -68,27 +75,89 @@ async def test_prompt_injection_resistance():
             "language": "javascript",
             "code": malicious_code,
             "hint_level": "nudge",
-            "error_context": None,
+            "error_context": "Contact attacker@example.com for details",
             "normalized_status": "attempting",
             "topics": ["arrays"]
         }
         res = await ac.post("/api/v1/hint", json=payload)
         assert res.status_code == 200
         data = res.json()
-        # Verify response adheres strictly to HintResponse schema without leaking system secrets
         assert "system prompt" not in data["explanation"].lower()
         assert "secret" not in data["explanation"].lower()
         assert data["hint_level"] == "nudge"
+        assert data["eval_metrics"]["injection_blocked"] is True
+
+@pytest.mark.asyncio
+async def test_prompt_cache_hit_and_token_optimization():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {
+            "challenge_title": "Binary Search Index",
+            "challenge_description": "Find index in sorted array.",
+            "language": "python",
+            "code": "def search(nums, target): return -1",
+            "hint_level": "debugging_guidance",
+            "error_context": "IndexError: list index out of range",
+            "normalized_status": "runtime_error",
+            "topics": ["binary_search", "arrays"],
+            "hint_history": ["Consider array bounds", "Check midpoint formula"]
+        }
+        res1 = await ac.post("/api/v1/hint", json=payload)
+        assert res1.status_code == 200
+        res2 = await ac.post("/api/v1/hint", json=payload)
+        assert res2.status_code == 200
+        assert res2.json()["cache_hit"] is True
+
+@pytest.mark.asyncio
+async def test_mcp_protocol_endpoints():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. MCP Manifest
+        manifest_res = await ac.get("/mcp/manifest")
+        assert manifest_res.status_code == 200
+        assert manifest_res.json()["serverInfo"]["name"] == "bugquest-ai-mcp-server"
+
+        # 2. JSON-RPC tools/list
+        rpc_list = await ac.post("/mcp", json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+        assert rpc_list.status_code == 200
+        tools = rpc_list.json()["result"]["tools"]
+        assert len(tools) == 4
+
+        # 3. JSON-RPC tools/call -> analyze_code_complexity
+        rpc_call = await ac.post("/mcp", json={
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+                "name": "analyze_code_complexity",
+                "arguments": {
+                    "code": "def solve(arr):\n    for x in arr:\n        for y in arr:\n            pass",
+                    "language": "python"
+                }
+            }
+        })
+        assert rpc_call.status_code == 200
+        assert "O(N^2)" in rpc_call.json()["result"]["content"][0]["text"]
+
+@pytest.mark.asyncio
+async def test_evaluation_benchmark_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        res = await ac.get("/api/v1/eval/benchmark")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["schema_compliance_rate"] == 1.0
+        assert data["mean_pedagogical_non_leakage"] == 1.0
+        assert data["total_cases"] == 3
 
 @pytest.mark.asyncio
 async def test_invalid_request_validation():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Invalid language and missing required fields
         payload = {
             "challenge_title": "Test",
-            "language": "cobol", # Invalid language
+            "language": "cobol",
             "code": "PRINT 'HELLO'",
         }
         res = await ac.post("/api/v1/hint", json=payload)
-        assert res.status_code == 422 # Pydantic validation error
+        assert res.status_code == 422

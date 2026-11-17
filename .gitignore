@@ -38,7 +38,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-
+*.zip
 # Laravel Storage & Cache
 backend/storage/*.key
 backend/storage/framework/cache/*

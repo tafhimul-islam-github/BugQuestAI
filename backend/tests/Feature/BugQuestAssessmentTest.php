@@ -81,7 +81,7 @@ class BugQuestAssessmentTest extends TestCase
         $token = $user->createToken('test_token')->plainTextToken;
 
         // Solution code for JavaScript Two Sum
-        $validCode = $challenge->starter_code['javascript'];
+        $validCode = "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nif (input.length < 2) process.exit(0);\nconst nums = input[0].split(',').map(Number);\nconst target = Number(input[1]);\nfunction twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const comp = target - nums[i];\n    if (map.has(comp)) return [map.get(comp), i];\n    map.set(nums[i], i);\n  }\n  return [];\n}\nconsole.log(JSON.stringify(twoSum(nums, target)));";
 
         $subResponse = $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson('/api/submissions', [
@@ -181,5 +181,44 @@ class BugQuestAssessmentTest extends TestCase
         // 5. Verify Revoked Share Token now returns 404
         $revokedAccessRes = $this->getJson("/api/reports/shared/{$shareToken}");
         $revokedAccessRes->assertStatus(404);
+    }
+
+    public function test_own_accepted_code_in_history_and_community_submissions_hide_solution_code(): void
+    {
+        $learner = User::where('email', 'learner@bugquest.ai')->first();
+        $challenge = Challenge::where('slug', 'two-sum-target-finder')->first();
+        $token = $learner->createToken('history_token')->plainTextToken;
+
+        $solutionCode = "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nif (input.length < 2) process.exit(0);\nconst nums = input[0].split(',').map(Number);\nconst target = Number(input[1]);\nfunction twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const comp = target - nums[i];\n    if (map.has(comp)) return [map.get(comp), i];\n    map.set(nums[i], i);\n  }\n  return [];\n}\nconsole.log(JSON.stringify(twoSum(nums, target)));";
+
+        // 1. Learner submits solution
+        $subRes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/submissions', [
+                'challenge_id' => $challenge->id,
+                'language' => 'javascript',
+                'code' => $solutionCode,
+            ]);
+        $subRes->assertStatus(201);
+
+        // 2. Learner re-opens the challenge: user_submissions MUST include their own submitted code
+        $reopenRes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/challenges/{$challenge->slug}");
+        $reopenRes->assertStatus(200);
+
+        $userSubs = $reopenRes->json('challenge.user_submissions');
+        $this->assertNotEmpty($userSubs);
+        $this->assertEquals($solutionCode, $userSubs[0]['code']);
+
+        // 3. Community submissions feed MUST list submissions for the problem but NEVER expose solution code
+        $commSubs = $reopenRes->json('challenge.community_submissions');
+        $this->assertNotEmpty($commSubs);
+        foreach ($commSubs as $cs) {
+            $this->assertArrayNotHasKey('code', $cs, 'Community submission leaked solution code!');
+            $this->assertArrayNotHasKey('modified_files', $cs, 'Community submission leaked modified_files!');
+            $this->assertArrayNotHasKey('patch_diff', $cs, 'Community submission leaked patch_diff!');
+            $this->assertArrayHasKey('user_name', $cs);
+            $this->assertArrayHasKey('status', $cs);
+            $this->assertArrayHasKey('pass_count', $cs);
+        }
     }
 }

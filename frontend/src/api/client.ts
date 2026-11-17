@@ -40,6 +40,20 @@ export interface Hypothesis {
   confidence?: number;
 }
 
+export interface CommunitySubmission {
+  id: number;
+  user_name: string;
+  user_role?: string;
+  is_own?: boolean;
+  status: 'queued' | 'running' | 'accepted' | 'wrong_answer' | 'compilation_error' | 'runtime_error' | 'time_limit_exceeded' | 'error';
+  language: string;
+  pass_count: number;
+  total_count: number;
+  execution_time_ms?: number;
+  memory_kb?: number;
+  created_at: string;
+}
+
 export interface Challenge {
   id: number;
   slug: string;
@@ -66,6 +80,8 @@ export interface Challenge {
   editorial?: string;
   public_test_cases?: TestCase[];
   is_solved?: boolean;
+  user_submissions?: Submission[];
+  community_submissions?: CommunitySubmission[];
 }
 
 export interface Submission {
