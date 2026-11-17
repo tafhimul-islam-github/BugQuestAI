@@ -90,7 +90,9 @@ class MultiFileDebuggingTest extends TestCase
     public function test_all_seeded_challenges_reproduce_defect_and_pass_with_reference_patch(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $challenges = Challenge::whereNotNull('repository_files')->get();
+        $challenges = Challenge::whereNotNull('repository_files')
+            ->where('slug', 'not like', 'byob-%')
+            ->get();
 
         $this->assertGreaterThanOrEqual(10, $challenges->count(), 'At least 10 real-world debugging challenges must be seeded.');
 

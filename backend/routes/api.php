@@ -4,7 +4,9 @@ use App\Http\Controllers\AiCoachController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\InterviewSessionController;
 use App\Http\Controllers\LearningController;
+use App\Http\Controllers\PostMortemController;
 use App\Http\Controllers\ReadinessReportController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +33,11 @@ Route::get('/challenges/{slugOrId}', [ChallengeController::class, 'show']);
 // Public Read-Only Share Token Access (Consent Based)
 Route::get('/reports/shared/{shareToken}', [ReadinessReportController::class, 'getPublicSharedReport']);
 
+// Live Collaborative "Pair Debugging" Interview Mode (Accessible for both authenticated and guest interview rooms)
+Route::post('/interviews', [InterviewSessionController::class, 'store']);
+Route::get('/interviews/{sessionCode}', [InterviewSessionController::class, 'show']);
+Route::post('/interviews/{sessionCode}/evaluate', [InterviewSessionController::class, 'evaluate']);
+
 // Authenticated Endpoints
 Route::middleware('auth:sanctum')->group(function () {
     // Current User & Profile
@@ -46,6 +53,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/submissions', [SubmissionController::class, 'index']);
     Route::get('/submissions/{id}', [SubmissionController::class, 'show']);
+    Route::post('/submissions/{id}/chaos-test', [SubmissionController::class, 'chaosTest']);
+
+    // Incident Post-Mortem & RCA Studio
+    Route::post('/challenges/{id}/post-mortem', [PostMortemController::class, 'store']);
+    Route::get('/challenges/{id}/post-mortem', [PostMortemController::class, 'show']);
 
     // AI Debugging Coach (Rate Limited: max 20 hints per min)
     Route::middleware('throttle:20,1')->group(function () {
@@ -72,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Administrative & Instructor Authoring Management
     Route::prefix('admin')->group(function () {
         Route::post('/challenges', [ChallengeController::class, 'store']);
+        Route::post('/challenges/import-github', [ChallengeController::class, 'importGithub']);
         Route::post('/challenges/{id}/validate', [ChallengeController::class, 'validateChallenge']);
     });
 });

@@ -161,3 +161,22 @@ async def test_invalid_request_validation():
         }
         res = await ac.post("/api/v1/hint", json=payload)
         assert res.status_code == 422
+
+@pytest.mark.asyncio
+async def test_post_mortem_evaluation_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        payload = {
+            "challenge_title": "Cart Double Discount Bug",
+            "category": "logic_state",
+            "root_cause_analysis": "The discount was deducted twice because recalculate() mutated this.subtotal upon reload.",
+            "preventative_measures": "Enforce subtotal as an immutable sum and apply idempotent discount policy with regression tests.",
+            "patch_diff": "--- a/src/cart.js\n+++ b/src/cart.js\n"
+        }
+        res = await ac.post("/post-mortem/grade", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["score"] >= 75
+        assert "feedback" in data
+        assert data["feedback"]["root_cause_score"] > 0
+        assert data["feedback"]["remediation_score"] > 0

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Editor, { DiffEditor } from '@monaco-editor/react';
 import confetti from 'canvas-confetti';
@@ -10,7 +10,15 @@ import {
   AiHint,
   RepositoryFile,
   Hypothesis,
+  PostMortem,
 } from '../api/client';
+import { ApmTraceViewer } from '../components/ApmTraceViewer';
+import { StateGraphExplorer } from '../components/StateGraphExplorer';
+import { PostMortemModal } from '../components/PostMortemModal';
+import { ChaosTestDrawer } from '../components/ChaosTestDrawer';
+import { VoiceCoachController } from '../components/VoiceCoachController';
+import { TimeTravelDebugger } from '../components/TimeTravelDebugger';
+import { executeInClientWorker } from '../services/wasmEngine';
 import {
   Terminal,
   Send,
@@ -40,10 +48,15 @@ import {
   Sun,
   ChevronDown,
   ChevronUp,
+  Activity,
+  Zap,
+  Award,
+  ShieldCheck,
+  Layers,
 } from 'lucide-react';
 
-type LeftTab = 'report' | 'my_submissions' | 'community' | 'evidence' | 'editorial';
-type BottomTab = 'results' | 'coach';
+type LeftTab = 'report' | 'apm_trace' | 'state_graph' | 'my_submissions' | 'community' | 'evidence' | 'editorial';
+type BottomTab = 'results' | 'coach' | 'chaos' | 'debugger';
 
 export const CodingWorkspacePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -92,6 +105,25 @@ export const CodingWorkspacePage: React.FC = () => {
   const [requestingHint, setRequestingHint] = useState(false);
   const [currentHint, setCurrentHint] = useState<AiHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+
+  // Post-Mortem & Chaos Testing State
+  const [showPostMortemModal, setShowPostMortemModal] = useState(false);
+  const [, setPostMortemRecord] = useState<PostMortem | null>(null);
+
+  // Anti-Cheat & Keystroke Telemetry Tracking
+  const keystrokesCount = useRef(0);
+  const pasteEventsCount = useRef(0);
+  const totalPastedChars = useRef(0);
+  const focusLostCount = useRef(0);
+  const activeCodingStart = useRef(Date.now());
+
+  useEffect(() => {
+    const handleWindowBlur = () => {
+      focusLostCount.current += 1;
+    };
+    window.addEventListener('blur', handleWindowBlur);
+    return () => window.removeEventListener('blur', handleWindowBlur);
+  }, []);
 
   // Helper to apply a submission's code/files into the workspace
   const applySubmissionToWorkspace = (
@@ -262,6 +294,18 @@ export const CodingWorkspacePage: React.FC = () => {
   const handleCodeChange = (newVal: string | undefined) => {
     if (!activeFile || !activeFile.is_editable) return;
     const updatedContent = newVal ?? '';
+    const oldContent = activeFile.content || '';
+    const charDiff = updatedContent.length - oldContent.length;
+
+    if (charDiff > 25) {
+      // Paste or large clipboard insertion
+      pasteEventsCount.current += 1;
+      totalPastedChars.current += charDiff;
+    } else if (charDiff !== 0) {
+      // Keystroke
+      keystrokesCount.current += 1;
+    }
+
     setFiles((prev) => prev.map((f) => (f.path === activeFile.path ? { ...f, content: updatedContent } : f)));
   };
 
@@ -317,6 +361,36 @@ export const CodingWorkspacePage: React.FC = () => {
       const lang = selectedLanguage || challenge.supported_languages?.[0] || 'javascript';
       const modifiedFilesPayload = files.filter((f) => f.is_editable);
 
+      // Offline WebAssembly / Worker execution fallback
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        const offlineResult = await executeInClientWorker(
+          files,
+          challenge.entrypoint_test || 'tests/runner.cjs'
+        );
+
+        const offlineSub: Submission = {
+          id: Date.now(),
+          challenge_id: challenge.id,
+          language: lang,
+          code: activeFile?.content || '',
+          modified_files: modifiedFilesPayload,
+          status: offlineResult.status,
+          pass_count: offlineResult.pass_count,
+          total_count: offlineResult.total_count,
+          execution_time_ms: offlineResult.execution_time_ms,
+          memory_kb: offlineResult.memory_kb,
+          error_output: offlineResult.error_output || undefined,
+          public_test_results: offlineResult.public_test_results as any,
+          created_at: new Date().toISOString(),
+        };
+
+        setSubmissionResult(offlineSub);
+        setSelectedMySubmission(offlineSub);
+        setUserSubmissions((prev) => [offlineSub, ...prev]);
+        setSubmitting(false);
+        return;
+      }
+
       const res = await api.submissions.create({
         challenge_id: challenge.id,
         language: lang,
@@ -324,6 +398,13 @@ export const CodingWorkspacePage: React.FC = () => {
         modified_files: modifiedFilesPayload,
         hypothesis: hypothesis,
         patch_diff: generatePatchDiff(),
+        telemetry: {
+          keystrokes_count: keystrokesCount.current,
+          paste_events_count: pasteEventsCount.current,
+          total_pasted_chars: totalPastedChars.current,
+          active_coding_ms: Date.now() - activeCodingStart.current,
+          focus_lost_count: focusLostCount.current,
+        },
       });
 
       const newSub: Submission = {
@@ -554,6 +635,29 @@ export const CodingWorkspacePage: React.FC = () => {
           </button>
 
           <button
+            onClick={async () => {
+              if (!challenge) return;
+              try {
+                const res = await api.interviews.create({
+                  challenge_id: challenge.id,
+                  candidate_name: 'Alex Chen',
+                });
+                if (res.session?.session_code) {
+                  window.location.href = `/interviews/${res.session.session_code}`;
+                }
+              } catch (err: any) {
+                console.error('Failed to create interview session', err);
+                alert('Could not start pair interview session: ' + (err?.message || 'Server error'));
+              }
+            }}
+            title="Start Mock Collaborative Interview Room"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-semibold transition-all"
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">Pair Interview</span>
+          </button>
+
+          <button
             onClick={handleRequestHint}
             disabled={requestingHint}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition-all"
@@ -593,6 +697,36 @@ export const CodingWorkspacePage: React.FC = () => {
             >
               <FileText className="w-3.5 h-3.5" />
               <span>Problem & Ticket</span>
+            </button>
+
+            <button
+              onClick={() => setLeftTab('apm_trace')}
+              className={`px-3 py-2 border-b-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                leftTab === 'apm_trace'
+                  ? 'border-blue-600 text-blue-600 font-bold bg-white rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-red-500" />
+              <span>APM Telemetry</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-red-100 text-red-700 font-bold">
+                Trace
+              </span>
+            </button>
+
+            <button
+              onClick={() => setLeftTab('state_graph')}
+              className={`px-3 py-2 border-b-2 text-xs transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                leftTab === 'state_graph'
+                  ? 'border-indigo-600 text-indigo-600 font-bold bg-white rounded-t-lg'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
+              <span>State Topology</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-indigo-100 text-indigo-700 font-bold">
+                Graph
+              </span>
             </button>
 
             <button
@@ -715,7 +849,7 @@ export const CodingWorkspacePage: React.FC = () => {
                           </h4>
                           <ol className="list-decimal list-inside space-y-1 p-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs">
                             {challenge.bug_report.reproduction_steps.map((step, idx) => (
-                              <li key={idx}>{step}</li>
+                              <li key={idx}>{typeof step === 'string' ? step.replace(/^\d+[\.\)]\s*/, '') : step}</li>
                             ))}
                           </ol>
                         </div>
@@ -814,6 +948,24 @@ export const CodingWorkspacePage: React.FC = () => {
                     </ul>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB: APM DISTRIBUTED TRACE VIEWER */}
+            {leftTab === 'apm_trace' && (
+              <div className="space-y-4">
+                <ApmTraceViewer traces={challenge.telemetry_traces} framework={challenge.framework} />
+              </div>
+            )}
+
+            {/* TAB: VISUAL MEMORY & STATE GRAPH EXPLORER */}
+            {leftTab === 'state_graph' && (
+              <div className="space-y-4">
+                <StateGraphExplorer
+                  category={challenge.category}
+                  challengeSlug={challenge.slug}
+                  challengeTitle={challenge.title}
+                />
               </div>
             )}
 
@@ -1301,32 +1453,73 @@ export const CodingWorkspacePage: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                   <span>4-Tier AI Coach</span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    setBottomTab('debugger');
+                    setConsoleCollapsed(false);
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    bottomTab === 'debugger' && !consoleCollapsed
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Cpu className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Step Debugger</span>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-blue-100 text-blue-800 font-bold">
+                    Replay
+                  </span>
+                </button>
+
+                {submissionResult && submissionResult.status === 'accepted' && (
+                  <button
+                    onClick={() => {
+                      setBottomTab('chaos');
+                      setConsoleCollapsed(false);
+                    }}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                      bottomTab === 'chaos' && !consoleCollapsed
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs font-bold'
+                        : 'text-amber-700 hover:text-amber-900'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Chaos Monkey</span>
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-amber-100 text-amber-800">
+                      Stress
+                    </span>
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
                 {bottomTab === 'coach' && !consoleCollapsed && (
-                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
-                    {(
-                      [
-                        { id: 'nudge', label: '1. Nudge' },
-                        { id: 'direction', label: '2. Direction' },
-                        { id: 'debugging_guidance', label: '3. Diagnostic' },
-                        { id: 'detailed_explanation', label: '4. Walkthrough' },
-                      ] as const
-                    ).map((tier) => (
-                      <button
-                        key={tier.id}
-                        onClick={() => setHintLevel(tier.id)}
-                        className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                          hintLevel === tier.id
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        {tier.label}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <VoiceCoachController currentHintText={currentHint?.explanation} />
+                    <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
+                      {(
+                        [
+                          { id: 'nudge', label: '1. Nudge' },
+                          { id: 'direction', label: '2. Direction' },
+                          { id: 'debugging_guidance', label: '3. Diagnostic' },
+                          { id: 'detailed_explanation', label: '4. Walkthrough' },
+                        ] as const
+                      ).map((tier) => (
+                        <button
+                          key={tier.id}
+                          onClick={() => setHintLevel(tier.id)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                            hintLevel === tier.id
+                              ? 'bg-indigo-600 text-white'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          {tier.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <button
@@ -1393,6 +1586,67 @@ export const CodingWorkspacePage: React.FC = () => {
                             )}
                           </div>
                         </div>
+
+                        {/* Celebratory Post-Mortem & Chaos Monkey Banner on Accepted */}
+                        {submissionResult.status === 'accepted' && (
+                          <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <div className="p-2 rounded-lg bg-emerald-500 text-white shadow-xs">
+                                <Award className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <span className="font-bold text-slate-900 block text-xs">
+                                  Verification Succeeded — Ready for Incident Drills
+                                </span>
+                                <span className="text-[11px] text-slate-600">
+                                  Cement your workforce dossier by drafting an RCA or stress-testing against Chaos Monkey mutations.
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setShowPostMortemModal(true)}
+                                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>Draft RCA Post-Mortem</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setBottomTab('chaos');
+                                  setConsoleCollapsed(false);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                              >
+                                <Zap className="w-3.5 h-3.5 fill-current" />
+                                <span>Chaos Stress Test</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Anti-Cheat & Keystroke Telemetry Badge */}
+                        {submissionResult.telemetry && (
+                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                              <span className="font-bold text-slate-800">
+                                Behavioral Integrity:
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">
+                                {submissionResult.telemetry.integrity_confidence_score ?? 100}% Verified Organic
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-4 text-slate-600 text-[11px]">
+                              <span>Keystrokes: <strong className="text-slate-900">{submissionResult.telemetry.keystrokes_count ?? 0}</strong></span>
+                              <span>Pastes: <strong className="text-slate-900">{submissionResult.telemetry.paste_events_count ?? 0}</strong></span>
+                              <span>Coding Time: <strong className="text-slate-900">{Math.max(1, Math.round((submissionResult.telemetry.active_coding_ms ?? 0) / 1000))}s</strong></span>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Error Output */}
                         {submissionResult.error_output && (
@@ -1525,11 +1779,36 @@ export const CodingWorkspacePage: React.FC = () => {
                     )}
                   </div>
                 )}
+
+                {bottomTab === 'chaos' && submissionResult && (
+                  <ChaosTestDrawer
+                    submissionId={submissionResult.id}
+                    initialResults={submissionResult.chaos_results}
+                    onChaosCompleted={(newChaos) => {
+                      setSubmissionResult((prev) => (prev ? { ...prev, chaos_results: newChaos } : prev));
+                    }}
+                  />
+                )}
+
+                {bottomTab === 'debugger' && (
+                  <TimeTravelDebugger challengeSlug={challenge.slug} />
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {challenge && (
+        <PostMortemModal
+          challengeId={challenge.id}
+          challengeTitle={challenge.title}
+          submissionId={submissionResult?.id || (userSubmissions.find((s) => s.status === 'accepted')?.id || 0)}
+          isOpen={showPostMortemModal}
+          onClose={() => setShowPostMortemModal(false)}
+          onSaved={(pm) => setPostMortemRecord(pm)}
+        />
+      )}
     </div>
   );
 };

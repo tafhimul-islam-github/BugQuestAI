@@ -39,3 +39,16 @@ class HintResponse(BaseModel):
     retrieved_context: List[RetrievedChunk] = Field(default_factory=list)
     pipeline_trace: List[str] = Field(default_factory=list)
     eval_metrics: Optional[Dict[str, Any]] = None
+
+class PostMortemGradeRequest(BaseModel):
+    challenge_title: str
+    category: Optional[str] = "general"
+    root_cause_analysis: str
+    preventative_measures: str
+    patch_diff: Optional[str] = ""
+
+class ByobImportRequest(BaseModel):
+    repo_url: str
+    issue_description: str
+    framework: Optional[str] = "Node.js"
+    difficulty: Optional[str] = "intermediate"

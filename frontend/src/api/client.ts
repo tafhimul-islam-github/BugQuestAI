@@ -75,6 +75,29 @@ export interface Challenge {
   starter_code?: Record<string, string>;
   supported_languages?: string[];
   topics?: string[];
+  telemetry_traces?: {
+    trace_id: string;
+    root_service: string;
+    total_duration_ms: number;
+    error_count: number;
+    warning_count: number;
+    spans: Array<{
+      id: string;
+      parent_id: string | null;
+      service: string;
+      name: string;
+      start_time_offset_ms: number;
+      duration_ms: number;
+      status: 'ok' | 'error' | 'cancelled';
+      http_status?: number;
+      tags?: Record<string, any>;
+      error_event?: {
+        type: string;
+        message: string;
+        stack?: string;
+      };
+    }>;
+  };
   time_limit_ms?: number;
   memory_limit_mb?: number;
   editorial?: string;
@@ -92,6 +115,34 @@ export interface Submission {
   modified_files?: RepositoryFile[];
   patch_diff?: string;
   hypothesis?: Hypothesis;
+  telemetry?: {
+    keystrokes_count?: number;
+    paste_events_count?: number;
+    total_pasted_chars?: number;
+    active_coding_ms?: number;
+    focus_lost_count?: number;
+    typing_cadence_cpm?: number;
+    integrity_confidence_score?: number;
+    integrity_flags?: string[];
+    is_verified_organic?: boolean;
+    recorded_at?: string;
+  };
+  chaos_results?: {
+    status: 'RESILIENT' | 'VULNERABLE';
+    resilience_score: number;
+    total_mutations: number;
+    passed_mutations: number;
+    mutations: Array<{
+      name: string;
+      description: string;
+      passed: boolean;
+      duration_ms: number;
+      status: string;
+      detail: string;
+    }>;
+    executed_at: string;
+    verdict: string;
+  };
   status: 'queued' | 'running' | 'accepted' | 'wrong_answer' | 'compilation_error' | 'runtime_error' | 'time_limit_exceeded' | 'error';
   pass_count: number;
   total_count: number;
@@ -202,6 +253,26 @@ export interface PublicSharedReport {
   };
 }
 
+export interface PostMortem {
+  id: number;
+  user_id: number;
+  challenge_id: number;
+  submission_id: number;
+  root_cause_analysis: string;
+  preventative_measures: string;
+  score: number;
+  feedback?: {
+    root_cause_score?: number;
+    remediation_score?: number;
+    communication_score?: number;
+    summary?: string;
+    strengths?: string[];
+    recommendations?: string[];
+  };
+  ai_evaluation?: any;
+  created_at: string;
+}
+
 const API_BASE = '/api';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -272,6 +343,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    importGithub: (data: { repo_url: string; issue_description: string; framework?: string; difficulty?: string }) =>
+      request<{ message: string; challenge: Challenge }>('/admin/challenges/import-github', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     validateChallenge: (id: number) =>
       request<{
         valid: boolean;
@@ -297,10 +373,15 @@ export const api = {
       hypothesis?: Hypothesis;
       patch_diff?: string;
       idempotency_key?: string;
+      telemetry?: any;
     }) =>
       request<{ message: string; submission: Submission }>('/submissions', {
         method: 'POST',
         body: JSON.stringify(data),
+      }),
+    runChaosTest: (submissionId: number) =>
+      request<{ message: string; chaos_results: any }>(`/submissions/${submissionId}/chaos-test`, {
+        method: 'POST',
       }),
     list: (params?: { challenge_id?: number; status?: string; page?: number }) => {
       const q = new URLSearchParams();
@@ -359,5 +440,30 @@ export const api = {
       }),
     getPublicShared: (shareToken: string) =>
       request<{ shared_report: PublicSharedReport }>(`/reports/shared/${shareToken}`),
+  },
+
+  postMortem: {
+    submit: (challengeId: number, data: { submission_id: number; root_cause_analysis: string; preventative_measures: string }) =>
+      request<{ message: string; post_mortem: PostMortem }>(`/challenges/${challengeId}/post-mortem`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    get: (challengeId: number) =>
+      request<{ post_mortem: PostMortem | null }>(`/challenges/${challengeId}/post-mortem`),
+  },
+
+  interviews: {
+    create: (data: { challenge_id: number; candidate_name?: string; candidate_email?: string }) =>
+      request<{ message: string; session: any }>('/interviews', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    get: (sessionCode: string) =>
+      request<{ session: any }>(`/interviews/${sessionCode}`),
+    evaluate: (sessionCode: string, data: { interviewer_notes?: string; evaluation_rubric: any; status?: string }) =>
+      request<{ message: string; session: any }>(`/interviews/${sessionCode}/evaluate`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 };

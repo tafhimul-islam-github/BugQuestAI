@@ -18,6 +18,7 @@ import { RecommendationsPage } from './pages/RecommendationsPage';
 import { ReadinessReportPage } from './pages/ReadinessReportPage';
 import { PublicSharedReportPage } from './pages/PublicSharedReportPage';
 import { AdminChallengePage } from './pages/AdminChallengePage';
+import { LiveInterviewPage } from './pages/LiveInterviewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -34,11 +35,12 @@ const AppShell: React.FC = () => {
   const location = useLocation();
   const isWorkspaceRoute =
     location.pathname.startsWith('/challenge/') ||
-    (location.pathname.startsWith('/challenges/') && location.pathname !== '/challenges');
+    (location.pathname.startsWith('/challenges/') && location.pathname !== '/challenges') ||
+    location.pathname.startsWith('/interviews/');
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-900">
-      <Navbar />
+      {!location.pathname.startsWith('/interviews/') && <Navbar />}
       <main className="flex-1 flex flex-col min-h-0">
         <Routes>
           {/* Public Routes */}
@@ -48,6 +50,7 @@ const AppShell: React.FC = () => {
           <Route path="/challenges" element={<ChallengeLibraryPage />} />
           <Route path="/challenge/:slug" element={<CodingWorkspacePage />} />
           <Route path="/challenges/:slug" element={<CodingWorkspacePage />} />
+          <Route path="/interviews/:sessionCode" element={<LiveInterviewPage />} />
           <Route path="/report/shared/:token" element={<PublicSharedReportPage />} />
 
           {/* Authenticated Routes */}
