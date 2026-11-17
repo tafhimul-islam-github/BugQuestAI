@@ -29,6 +29,8 @@ class Submission extends Model
         'public_test_results',
         'judge_provider',
         'idempotency_key',
+        'telemetry',
+        'chaos_results',
     ];
 
     protected $casts = [
@@ -36,6 +38,8 @@ class Submission extends Model
         'hypothesis' => 'array',
         'evidence_records' => 'array',
         'public_test_results' => 'array',
+        'telemetry' => 'array',
+        'chaos_results' => 'array',
         'pass_count' => 'integer',
         'total_count' => 'integer',
         'execution_time_ms' => 'float',

@@ -27,10 +27,20 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = (demoEmail: string) => {
+  const handleQuickDemoLogin = async (demoEmail: string) => {
     setEmail(demoEmail);
     setPassword('password123');
     setError(null);
+    setLoading(true);
+
+    try {
+      await login(demoEmail, 'password123');
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'Login failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,22 +73,25 @@ export const LoginPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => fillDemoAccount('learner@bugquest.ai')}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center"
+              disabled={loading}
+              onClick={() => handleQuickDemoLogin('learner@bugquest.ai')}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center disabled:opacity-50"
             >
               Learner
             </button>
             <button
               type="button"
-              onClick={() => fillDemoAccount('educator@bugquest.ai')}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center"
+              disabled={loading}
+              onClick={() => handleQuickDemoLogin('educator@bugquest.ai')}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center disabled:opacity-50"
             >
               Educator
             </button>
             <button
               type="button"
-              onClick={() => fillDemoAccount('admin@bugquest.ai')}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center"
+              disabled={loading}
+              onClick={() => handleQuickDemoLogin('admin@bugquest.ai')}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-700 shadow-xs transition-all text-center disabled:opacity-50"
             >
               Admin
             </button>

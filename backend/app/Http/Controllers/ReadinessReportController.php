@@ -24,6 +24,20 @@ class ReadinessReportController extends Controller
 
         $totalSubmissions = Submission::where('user_id', $user->id)->count();
 
+        // Calculate average telemetry integrity confidence
+        $telemetrySubmissions = Submission::where('user_id', $user->id)
+            ->whereNotNull('telemetry')
+            ->get();
+        $avgIntegrity = $telemetrySubmissions->count() > 0
+            ? (int) round($telemetrySubmissions->avg(fn($s) => $s->telemetry['integrity_confidence_score'] ?? 100))
+            : 98;
+
+        $postMortemCount = \App\Models\ChallengePostMortem::where('user_id', $user->id)->count();
+        $chaosResilientCount = Submission::where('user_id', $user->id)
+            ->whereNotNull('chaos_results')
+            ->where('chaos_results->status', 'RESILIENT')
+            ->count();
+
         // Calculate verified evidence score
         $score = $evidence->count() > 0 ? (int) round($evidence->avg('score')) : 0;
 
@@ -54,6 +68,9 @@ class ReadinessReportController extends Controller
                 'show_challenges_solved' => true,
                 'show_diagnostics' => true,
                 'target_role' => $user->target_role,
+                'integrity_confidence_score' => $avgIntegrity,
+                'post_mortem_count' => $postMortemCount,
+                'chaos_resilient_count' => $chaosResilientCount,
             ],
             'skill_breakdown' => $evidence->map(fn($e) => [
                 'topic' => $e->topic,
