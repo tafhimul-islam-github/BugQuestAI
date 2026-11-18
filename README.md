@@ -54,7 +54,7 @@ BugQuestAI/
 ### 1. Repository Setup & Environment
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/bugquest-ai.git
+git clone https://github.com/tafhimul-islam-github/BugQuestAI.git
 cd BugQuestAI
 
 # Copy environment template
