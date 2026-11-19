@@ -19,6 +19,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
+        'suspended_at',
+        'suspended_reason',
+        'last_login_at',
         'target_role',
         'bio',
         'settings',
@@ -33,9 +37,16 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'suspended_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
             'settings' => 'array',
         ];
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
     }
 
     public function isAdmin(): bool
@@ -76,5 +87,26 @@ class User extends Authenticatable
     public function coachingSessions(): HasMany
     {
         return $this->hasMany(AiCoachingSession::class);
+    }
+
+    public function authoredChallenges(): HasMany
+    {
+        return $this->hasMany(Challenge::class, 'author_id');
+    }
+
+    public function classrooms(): HasMany
+    {
+        return $this->hasMany(Classroom::class, 'educator_id');
+    }
+
+    public function enrolledClassrooms(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Classroom::class, 'classroom_learner', 'learner_id', 'classroom_id')
+            ->withPivot('enrolled_at');
+    }
+
+    public function panelNotifications(): HasMany
+    {
+        return $this->hasMany(PanelNotification::class);
     }
 }

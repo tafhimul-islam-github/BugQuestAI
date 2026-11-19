@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { ShieldCheck, Plus, CheckCircle2, AlertCircle, Trash2, Cpu, Check } from 'lucide-react';
+import { ShieldCheck, Plus, CheckCircle2, AlertCircle, Trash2, Cpu, Check, ArrowLeft } from 'lucide-react';
 
-export const AdminChallengePage: React.FC = () => {
+export const AdminChallengePage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const [title, setTitle] = useState('');
   const [difficulty, setDifficulty] = useState('beginner');
   const [category, setCategory] = useState('logic_state');
@@ -101,20 +102,32 @@ export const AdminChallengePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 font-sans selection:bg-blue-100 selection:text-blue-900">
-      <div className="border-b border-slate-200/90 pb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-600">
-            <ShieldCheck className="w-5 h-5" />
+    <div className={embedded ? 'font-sans' : 'min-h-screen bg-[#f1f5f9] py-8 px-4 sm:px-6 lg:px-8 font-sans'}>
+      <div className={embedded ? 'space-y-6' : 'max-w-4xl mx-auto space-y-6 selection:bg-blue-100 selection:text-blue-900'}>
+        {!embedded && (
+          <div className="flex items-center justify-between border-b border-slate-200/90 pb-5">
+            <div>
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 mb-2"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Admin Console
+              </Link>
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-700">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                  Direct Challenge Authoring Studio
+                </h1>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                Author realistic multi-file debugging quests with bug tickets, reproduction steps, and automated mutation validation.
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Bug Mutation & Challenge Studio
-          </h1>
-        </div>
-        <p className="text-xs sm:text-sm text-slate-600 mt-1">
-          Author realistic multi-file debugging quests with bug tickets, reproduction steps, and automated mutation validation.
-        </p>
-      </div>
+        )}
 
       <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-card">
         {message && (
@@ -403,6 +416,7 @@ export const AdminChallengePage: React.FC = () => {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

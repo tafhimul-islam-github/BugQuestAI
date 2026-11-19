@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ChallengeSeeder::class,
             RealWorldDebuggingChallengeSeeder::class,
             SkillEvidenceSeeder::class,
+            PanelDataSeeder::class,
         ]);
     }
 }

@@ -1,7 +1,8 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
+import { MotionConfig } from 'framer-motion';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -17,7 +18,8 @@ import { SkillProfilePage } from './pages/SkillProfilePage';
 import { RecommendationsPage } from './pages/RecommendationsPage';
 import { ReadinessReportPage } from './pages/ReadinessReportPage';
 import { PublicSharedReportPage } from './pages/PublicSharedReportPage';
-import { AdminChallengePage } from './pages/AdminChallengePage';
+import { AdminPanelPage } from './pages/AdminPanelPage';
+import { EducatorPanelPage } from './pages/EducatorPanelPage';
 import { LiveInterviewPage } from './pages/LiveInterviewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -31,16 +33,25 @@ const queryClient = new QueryClient({
   },
 });
 
+const RoleDashboardEntry: React.FC = () => {
+  const { user } = useAuth();
+  if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+  if (user?.role === 'educator') return <Navigate to="/educator" replace />;
+  return <DashboardPage />;
+};
+
 const AppShell: React.FC = () => {
   const location = useLocation();
+  const isDashboardPanelRoute =
+    location.pathname.startsWith('/admin') || location.pathname.startsWith('/educator');
   const isWorkspaceRoute =
     location.pathname.startsWith('/challenge/') ||
     (location.pathname.startsWith('/challenges/') && location.pathname !== '/challenges') ||
     location.pathname.startsWith('/interviews/');
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-900">
-      {!location.pathname.startsWith('/interviews/') && <Navbar />}
+    <div className="flex flex-col min-h-screen bg-[#f6f8fc] text-slate-900">
+      {!location.pathname.startsWith('/interviews/') && !isDashboardPanelRoute && <Navbar />}
       <main className="flex-1 flex flex-col min-h-0">
         <Routes>
           {/* Public Routes */}
@@ -58,7 +69,7 @@ const AppShell: React.FC = () => {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <RoleDashboardEntry />
               </ProtectedRoute>
             }
           />
@@ -95,12 +106,22 @@ const AppShell: React.FC = () => {
             }
           />
 
-          {/* Admin Route */}
+          {/* Educator Panel Routes */}
           <Route
-            path="/admin/challenges"
+            path="/educator/*"
             element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminChallengePage />
+              <ProtectedRoute allowedRoles={['educator', 'admin']}>
+                <EducatorPanelPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Panel Routes (includes /admin/challenges inside Admin Console) */}
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPanelPage />
               </ProtectedRoute>
             }
           />
@@ -109,20 +130,22 @@ const AppShell: React.FC = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-      {!isWorkspaceRoute && <Footer />}
+      {!isWorkspaceRoute && !isDashboardPanelRoute && <Footer />}
     </div>
   );
 };
 
 export const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    </MotionConfig>
   );
 };
 
