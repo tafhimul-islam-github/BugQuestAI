@@ -11,8 +11,11 @@ import {
   Award,
   TrendingUp,
   AlertTriangle,
+  ChevronDown,
+  Sparkles,
 } from 'lucide-react';
 import { HeroSandbox3D } from '../components/HeroSandbox3D';
+import { ScrollReactiveCube } from '../components/ScrollReactiveCube';
 import {
   SandboxIsolationVector,
   HiddenTestMatrixVector,
@@ -88,11 +91,18 @@ export const LandingPage: React.FC = () => {
   const [activeHintLevel, setActiveHintLevel] = useState<HintTierKey>('nudge');
   const activeHint = DEMO_HINTS[activeHintLevel];
 
+  const handleScrollTo3D = () => {
+    const el = document.getElementById('cube-showcase');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-slate-900 flex flex-col">
-      {/* Asymmetric Split Hero with Interactive 3D Sandbox Core */}
+      {/* ─── Asymmetric Split Hero with Interactive 3D Sandbox Core ─── */}
       <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-200/80 bg-gradient-to-b from-white via-[#f6f8fc] to-[#f6f8fc]">
-        {/* Subtle Architectural Grid Backdrop */}
+        {/* Architectural Grid Backdrop */}
         <div className="absolute inset-0 bg-grid-pattern opacity-65 pointer-events-none" />
         <div
           aria-hidden="true"
@@ -109,7 +119,7 @@ export const LandingPage: React.FC = () => {
               className="lg:col-span-6 space-y-6 text-left"
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white/90 text-slate-700 text-xs font-semibold shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Isolated Subprocess Judge &amp; Socratic AI Coach</span>
               </div>
 
@@ -131,12 +141,15 @@ export const LandingPage: React.FC = () => {
                   <span>Explore Challenges</span>
                   <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Link>
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 text-slate-800 font-semibold text-sm shadow-xs transition-all"
+                <button
+                  type="button"
+                  onClick={handleScrollTo3D}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 text-slate-800 font-semibold text-sm shadow-xs transition-all cursor-pointer"
                 >
-                  <span>Create Free Account</span>
-                </Link>
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  <span>3D Architecture Motion</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 animate-bounce" />
+                </button>
               </div>
 
               {/* Compact Proof Metrics */}
@@ -156,7 +169,7 @@ export const LandingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Right: Interactive 3D Sandbox Core */}
+            {/* Right: Interactive 3D Sandbox Core Hero View */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -169,13 +182,18 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* ─── SCROLL-REACTIVE 3D CUBE SHOWCASE (Full Multi-Stage Morphing Experience) ─── */}
+      <div id="cube-showcase" className="relative">
+        <ScrollReactiveCube />
+      </div>
+
       {/* ─── Interactive Progressive AI Coach Simulator ─── */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.12 }}
         transition={{ duration: 0.6, ease: REVEAL_EASE }}
-        className="py-20 sm:py-24 bg-white border-b border-slate-200/80"
+        className="py-20 sm:py-24 bg-white border-b border-slate-200/80 relative z-10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -185,6 +203,10 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.5, ease: REVEAL_EASE }}
             className="max-w-2xl mb-12"
           >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold mb-3">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Interactive Simulator</span>
+            </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
               AI debugging that teaches instead of spoiling
             </h2>
@@ -219,7 +241,7 @@ export const LandingPage: React.FC = () => {
               <div className="lg:col-span-5 p-5 sm:p-6 border-b lg:border-b-0 lg:border-r border-slate-800/90 bg-[#0d1526]">
                 <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-3">
                   <span>Source Inspector</span>
-                  <span className="text-cyan-400">Line {activeHint.highlightLine} focused</span>
+                  <span className="text-cyan-400 font-semibold">Line {activeHint.highlightLine} focused</span>
                 </div>
                 <pre className="font-mono text-xs leading-6 overflow-x-auto">
                   {CODE_LINES.map((line, idx) => {
@@ -292,7 +314,7 @@ export const LandingPage: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
                       transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6"
+                      className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 shadow-inner"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
                         <div className="flex items-center gap-2.5">
@@ -343,6 +365,10 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.5, ease: REVEAL_EASE }}
             className="max-w-2xl mb-14"
           >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-semibold mb-3">
+              <Cpu className="w-3.5 h-3.5 text-blue-600" />
+              <span>Platform Architecture</span>
+            </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
               Built for authentic code verification
             </h2>
