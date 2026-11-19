@@ -102,7 +102,7 @@ export const Navbar: React.FC = () => {
           {/* Brand Logo & Status Tag */}
           <div className="flex items-center gap-5">
             <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
-              <BrandLogo size="md" showStatusDot />
+              <BrandLogo size="md" />
               <div className="flex items-center gap-1.5 font-display font-bold text-lg text-slate-900 tracking-tight">
                 <span>BugQuest</span>
                 <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-blue-50 text-blue-700 border border-blue-200/80">
@@ -110,12 +110,6 @@ export const Navbar: React.FC = () => {
                 </span>
               </div>
             </Link>
-
-            {/* Sandbox Status Badge */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50/90 border border-slate-200/80 text-[11px] font-medium text-slate-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Sandbox online</span>
-            </div>
           </div>
 
           {/* Desktop Navigation with Shared-Element Pill */}
@@ -259,8 +253,16 @@ export const Navbar: React.FC = () => {
                   aria-expanded={userDropdownOpen}
                   className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-all shadow-xs cursor-pointer"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-900 to-blue-700 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
-                    {user.name.charAt(0).toUpperCase()}
+                  <div className="relative">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-900 to-blue-700 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white"
+                    >
+                      <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+                    </span>
                   </div>
                   <span className="max-w-[120px] truncate font-semibold text-slate-800">{user.name}</span>
                   <ChevronDown
