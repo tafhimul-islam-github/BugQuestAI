@@ -51,12 +51,16 @@ export const ChallengeLibraryPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchChallenges();
-  }, [difficulty, selectedCategory, selectedTopic]);
+    const delay = search.trim() ? 300 : 0;
+    const timer = window.setTimeout(() => {
+      fetchChallenges();
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [difficulty, selectedCategory, selectedTopic, search]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchChallenges();
   };
 
   const difficultyColors: Record<string, string> = {
@@ -128,7 +132,6 @@ export const ChallengeLibraryPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setSearch('');
-                  fetchChallenges();
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >

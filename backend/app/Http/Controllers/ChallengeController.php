@@ -8,6 +8,7 @@ use App\Models\Submission;
 use App\Services\CodeJudgeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ChallengeController extends Controller
@@ -35,15 +36,51 @@ class ChallengeController extends Controller
 
         // Filter by topic
         if ($request->filled('topic') && $request->topic !== 'all') {
-            $query->whereJsonContains('topics', $request->topic);
+            $topic = mb_strtolower(trim((string) $request->topic));
+            $topicPatterns = array_unique([
+                "%{$topic}%",
+                '%' . str_replace(' ', '_', $topic) . '%',
+            ]);
+            $jsonCastType = DB::connection()->getDriverName() === 'mysql' ? 'CHAR' : 'TEXT';
+
+            $query->where(function ($q) use ($request, $topicPatterns, $jsonCastType) {
+                $q->whereJsonContains('topics', $request->topic);
+                foreach ($topicPatterns as $pattern) {
+                    $q->orWhereRaw("LOWER(CAST(topics AS {$jsonCastType})) LIKE ?", [$pattern]);
+                }
+            });
         }
 
-        // Search in title / description
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+        // Search across user-visible challenge metadata and repository content.
+        if (trim((string) $request->input('search', '')) !== '') {
+            $search = trim((string) $request->search);
+            $searchTerm = mb_strtolower($search);
+            $normalizedCategoryTerm = str_replace([' ', '-'], '_', $searchTerm);
+            $displayCategoryTerm = str_replace(['_', '-'], ' ', $searchTerm);
+            $searchPatterns = array_unique([
+                "%{$searchTerm}%",
+                '%' . str_replace(' ', '_', $searchTerm) . '%',
+                '%' . $normalizedCategoryTerm . '%',
+                '%' . $displayCategoryTerm . '%',
+            ]);
+            $jsonCastType = DB::connection()->getDriverName() === 'mysql' ? 'CHAR' : 'TEXT';
+
+            $query->where(function ($q) use ($searchTerm, $normalizedCategoryTerm, $displayCategoryTerm, $searchPatterns, $jsonCastType) {
+                $pattern = "%{$searchTerm}%";
+                $q->whereRaw('LOWER(title) LIKE ?', [$pattern])
+                  ->orWhereRaw('LOWER(description) LIKE ?', [$pattern])
+                  ->orWhereRaw('LOWER(category) LIKE ?', [$pattern])
+                  ->orWhereRaw('LOWER(framework) LIKE ?', [$pattern])
+                  ->orWhereRaw("LOWER(REPLACE(category, '_', ' ')) LIKE ?", ['%' . $displayCategoryTerm . '%'])
+                  ->orWhereRaw("LOWER(REPLACE(category, '-', ' ')) LIKE ?", ['%' . $displayCategoryTerm . '%'])
+                  ->orWhereRaw('LOWER(category) LIKE ?', ['%' . $normalizedCategoryTerm . '%']);
+
+                foreach (['bug_report', 'repository_files', 'topics'] as $column) {
+                    $expression = "LOWER(CAST({$column} AS {$jsonCastType})) LIKE ?";
+                    foreach ($searchPatterns as $pattern) {
+                        $q->orWhereRaw($expression, [$pattern]);
+                    }
+                }
             });
         }
 
@@ -87,7 +124,9 @@ class ChallengeController extends Controller
         $allTopics = Challenge::where('is_active', true)
             ->pluck('topics')
             ->flatten()
-            ->unique()
+            ->map(fn ($topic) => trim((string) $topic))
+            ->filter()
+            ->unique(fn ($topic) => mb_strtolower(str_replace('_', ' ', $topic)))
             ->values();
 
         $allCategories = Challenge::where('is_active', true)
