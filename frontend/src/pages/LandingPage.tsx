@@ -81,6 +81,9 @@ const CODE_LINES = [
   '    return []',
 ];
 
+/* Shared scroll-reveal ease */
+const REVEAL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 export const LandingPage: React.FC = () => {
   const [activeHintLevel, setActiveHintLevel] = useState<HintTierKey>('nudge');
   const activeHint = DEMO_HINTS[activeHintLevel];
@@ -102,7 +105,7 @@ export const LandingPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.45, ease: REVEAL_EASE }}
               className="lg:col-span-6 space-y-6 text-left"
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white/90 text-slate-700 text-xs font-semibold shadow-xs">
@@ -157,7 +160,7 @@ export const LandingPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, delay: 0.08, ease: REVEAL_EASE }}
               className="lg:col-span-6"
             >
               <HeroSandbox3D />
@@ -166,19 +169,37 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Interactive Progressive AI Coach Simulator */}
-      <section className="py-20 sm:py-24 bg-white border-b border-slate-200/80">
+      {/* ─── Interactive Progressive AI Coach Simulator ─── */}
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.12 }}
+        transition={{ duration: 0.6, ease: REVEAL_EASE }}
+        className="py-20 sm:py-24 bg-white border-b border-slate-200/80"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5, ease: REVEAL_EASE }}
+            className="max-w-2xl mb-12"
+          >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
               AI debugging that teaches instead of spoiling
             </h2>
             <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
               Generic assistants paste full solutions on the first prompt. BugQuest unlocks progressive coaching tiers anchored directly to your failing execution trace.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-3xl bg-[#0b1221] border border-slate-800 shadow-obsidian overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 32, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.08 }}
+            transition={{ duration: 0.65, delay: 0.1, ease: REVEAL_EASE }}
+            className="rounded-3xl bg-[#0b1221] border border-slate-800 shadow-obsidian overflow-hidden"
+          >
             {/* Console Header */}
             <div className="px-5 sm:px-7 py-4 border-b border-slate-800/90 flex flex-wrap items-center justify-between gap-3 bg-slate-950/60">
               <div className="flex items-center gap-2.5">
@@ -302,27 +323,42 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Architectural Capabilities with Bespoke Animated Vectors */}
-      <section className="py-20 sm:py-24 bg-[#f6f8fc]">
+      {/* ─── Architectural Capabilities with Bespoke Animated Vectors ─── */}
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.6, ease: REVEAL_EASE }}
+        className="py-20 sm:py-24 bg-[#f6f8fc]"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-14">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5, ease: REVEAL_EASE }}
+            className="max-w-2xl mb-14"
+          >
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
               Built for authentic code verification
             </h2>
             <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
               Every submission runs through isolated sandboxes, private edge-case suites, and empirical competency scoring.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1 */}
             <motion.div
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.55, delay: 0, ease: REVEAL_EASE }}
               whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
               className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-blue-300/80 transition-colors flex flex-col justify-between"
             >
               <div>
@@ -348,8 +384,11 @@ export const LandingPage: React.FC = () => {
 
             {/* Card 2 */}
             <motion.div
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.55, delay: 0.12, ease: REVEAL_EASE }}
               whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
               className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-emerald-300/80 transition-colors flex flex-col justify-between"
             >
               <div>
@@ -375,8 +414,11 @@ export const LandingPage: React.FC = () => {
 
             {/* Card 3 */}
             <motion.div
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.55, delay: 0.24, ease: REVEAL_EASE }}
               whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
               className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-amber-300/80 transition-colors flex flex-col justify-between"
             >
               <div>
@@ -401,10 +443,16 @@ export const LandingPage: React.FC = () => {
             </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* High-Contrast Obsidian CTA Card */}
-      <section className="py-16 sm:py-20 bg-white border-t border-slate-200/80">
+      {/* ─── High-Contrast Obsidian CTA Card ─── */}
+      <motion.section
+        initial={{ opacity: 0, y: 40, scale: 0.97 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.6, ease: REVEAL_EASE }}
+        className="py-16 sm:py-20 bg-white border-t border-slate-200/80"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative rounded-3xl bg-[#0b1221] border border-slate-800 p-8 sm:p-12 lg:p-14 overflow-hidden shadow-obsidian">
             <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
@@ -440,7 +488,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 };
