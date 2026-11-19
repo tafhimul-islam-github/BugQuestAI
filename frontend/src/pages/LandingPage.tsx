@@ -13,6 +13,8 @@ import {
   AlertTriangle,
   ChevronDown,
   Sparkles,
+  Zap,
+  Code2,
 } from 'lucide-react';
 import { HeroSandbox3D } from '../components/HeroSandbox3D';
 import { ScrollReactiveCube } from '../components/ScrollReactiveCube';
@@ -42,7 +44,7 @@ const DEMO_HINTS: Record<HintTierKey, DemoHint> = {
     tag: 'No Spoilers',
     tone: 'Socratic Inquiry',
     highlightLine: 3,
-    badgeClass: 'border-blue-400/30 bg-blue-500/15 text-blue-300',
+    badgeClass: 'border-blue-400/40 bg-blue-500/20 text-blue-300',
   },
   direction: {
     step: '02',
@@ -51,7 +53,7 @@ const DEMO_HINTS: Record<HintTierKey, DemoHint> = {
     tag: 'Pattern Strategy',
     tone: 'Algorithmic Direction',
     highlightLine: 4,
-    badgeClass: 'border-cyan-400/30 bg-cyan-500/15 text-cyan-300',
+    badgeClass: 'border-cyan-400/40 bg-cyan-500/20 text-cyan-300',
   },
   debugging_guidance: {
     step: '03',
@@ -60,7 +62,7 @@ const DEMO_HINTS: Record<HintTierKey, DemoHint> = {
     tag: 'Pinpointed Fault',
     tone: 'Failure Diagnostics',
     highlightLine: 5,
-    badgeClass: 'border-amber-400/30 bg-amber-500/15 text-amber-300',
+    badgeClass: 'border-amber-400/40 bg-amber-500/20 text-amber-300',
   },
   detailed_explanation: {
     step: '04',
@@ -69,7 +71,7 @@ const DEMO_HINTS: Record<HintTierKey, DemoHint> = {
     tag: 'Post-Attempt Review',
     tone: 'Canonical Fix',
     highlightLine: 6,
-    badgeClass: 'border-emerald-400/30 bg-emerald-500/15 text-emerald-300',
+    badgeClass: 'border-emerald-400/40 bg-emerald-500/20 text-emerald-300',
   },
 };
 
@@ -84,14 +86,15 @@ const CODE_LINES = [
   '    return []',
 ];
 
-/* Shared scroll-reveal ease */
 const REVEAL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export const LandingPage: React.FC = () => {
   const [activeHintLevel, setActiveHintLevel] = useState<HintTierKey>('nudge');
+  const [isTourTriggered, setIsTourTriggered] = useState<boolean>(false);
   const activeHint = DEMO_HINTS[activeHintLevel];
 
   const handleScrollTo3D = () => {
+    setIsTourTriggered(true);
     const el = document.getElementById('cube-showcase');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -99,77 +102,94 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-slate-900 flex flex-col">
-      {/* ─── Asymmetric Split Hero with Interactive 3D Sandbox Core ─── */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-200/80 bg-gradient-to-b from-white via-[#f6f8fc] to-[#f6f8fc]">
-        {/* Architectural Grid Backdrop */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-65 pointer-events-none" />
+    <div className="min-h-screen bg-[#070c18] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
+      {/* ─── Hero Section with Cohesive Obsidian Dark Styling & Ambient Glows ─── */}
+      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-28 border-b border-slate-800/80 bg-[#070c18]">
+        {/* Ambient Radial Blobs */}
         <div
           aria-hidden="true"
-          className="absolute -top-32 right-0 w-[640px] h-[420px] bg-gradient-to-bl from-blue-100/70 via-cyan-50/40 to-transparent blur-3xl rounded-full pointer-events-none"
+          className="absolute -top-32 left-1/4 w-[540px] h-[380px] bg-cyan-500/15 blur-[120px] rounded-full pointer-events-none"
         />
+        <div
+          aria-hidden="true"
+          className="absolute -top-24 right-0 w-[600px] h-[440px] bg-blue-600/20 blur-[130px] rounded-full pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"
+        />
+
+        {/* High-tech Dark Grid Pattern */}
+        <div className="absolute inset-0 bg-dark-grid opacity-40 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
-            {/* Left: Crisp Value Proposition */}
+            {/* Left Column: Bold Value Proposition */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: REVEAL_EASE }}
+              transition={{ duration: 0.5, ease: REVEAL_EASE }}
               className="lg:col-span-6 space-y-6 text-left"
             >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white/90 text-slate-700 text-xs font-semibold shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Isolated Subprocess Judge &amp; Socratic AI Coach</span>
+              {/* Status Pill Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 text-xs font-mono font-medium shadow-[0_0_15px_rgba(6,182,212,0.2)] backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span>ISOLATED SUBPROCESS JUDGE &amp; SOCRATIC AI COACH</span>
               </div>
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-[#0b1221] tracking-[-0.03em] leading-[1.08]">
-                Debug real codebases. Prove your engineering skill.
+              {/* Title with Gradient Polish */}
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white tracking-[-0.03em] leading-[1.08]">
+                Debug real codebases.
+                <span className="block mt-1 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                  Prove your engineering skill.
+                </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+              {/* Description */}
+              <p className="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
                 BugQuest AI pairs isolated subprocess test execution with a 4-tier pedagogical coach that guides your investigation without handing over answers. Build verifiable, consent-governed readiness dossiers from real fixes.
               </p>
 
-              {/* Primary & Secondary Actions */}
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <Link
                   to="/challenges"
-                  className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-blue-sm hover:shadow-blue-md transition-all duration-200"
+                  className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all duration-200"
                 >
-                  <Terminal className="w-4 h-4" />
+                  <Terminal className="w-4 h-4 text-cyan-200" />
                   <span>Explore Challenges</span>
-                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
+
                 <button
                   type="button"
                   onClick={handleScrollTo3D}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 text-slate-800 font-semibold text-sm shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800 hover:border-cyan-500/40 text-slate-200 font-semibold text-sm shadow-xs transition-all cursor-pointer backdrop-blur-md group"
                 >
-                  <Sparkles className="w-4 h-4 text-blue-600" />
-                  <span>3D Architecture Motion</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 animate-bounce" />
+                  <Sparkles className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
+                  <span>Interactive 3D Motion Tour</span>
+                  <ChevronDown className="w-4 h-4 text-slate-400 animate-bounce" />
                 </button>
               </div>
 
-              {/* Compact Proof Metrics */}
-              <div className="pt-6 mt-2 border-t border-slate-200/80 grid grid-cols-3 gap-4 max-w-lg">
-                <div>
-                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">4 Tiers</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Zero-spoiler coaching</p>
+              {/* Proof Metrics Strip */}
+              <div className="pt-6 mt-2 border-t border-slate-800/90 grid grid-cols-3 gap-4 max-w-lg">
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+                  <p className="font-display text-xl sm:text-2xl font-bold text-cyan-400 tabular-nums">4 Tiers</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Zero-spoiler coaching</p>
                 </div>
-                <div>
-                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">100%</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Hidden test isolation</p>
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+                  <p className="font-display text-xl sm:text-2xl font-bold text-emerald-400 tabular-nums">100%</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Hidden test isolation</p>
                 </div>
-                <div>
-                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">64-char</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Revocable proof tokens</p>
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+                  <p className="font-display text-xl sm:text-2xl font-bold text-amber-400 tabular-nums">64-char</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Revocable proof tokens</p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Right: Interactive 3D Sandbox Core Hero View */}
+            {/* Right Column: Interactive 3D Sandbox Core Viewport */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -182,18 +202,18 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── SCROLL-REACTIVE 3D CUBE SHOWCASE (Full Multi-Stage Morphing Experience) ─── */}
+      {/* ─── SCROLL-REACTIVE 3D CUBE SHOWCASE (Multi-Stage Morphing Experience) ─── */}
       <div id="cube-showcase" className="relative">
-        <ScrollReactiveCube />
+        <ScrollReactiveCube autoTourTrigger={isTourTriggered} />
       </div>
 
-      {/* ─── Interactive Progressive AI Coach Simulator ─── */}
+      {/* ─── Interactive Progressive AI Coach Simulator (Dark Glass Theme) ─── */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.12 }}
         transition={{ duration: 0.6, ease: REVEAL_EASE }}
-        className="py-20 sm:py-24 bg-white border-b border-slate-200/80 relative z-10"
+        className="py-20 sm:py-28 bg-[#090f1d] border-b border-slate-800 relative z-10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -201,16 +221,16 @@ export const LandingPage: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: REVEAL_EASE }}
-            className="max-w-2xl mb-12"
+            className="max-w-2xl mb-12 text-left"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold mb-3">
-              <Terminal className="w-3.5 h-3.5" />
-              <span>Interactive Simulator</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-xs font-mono font-medium mb-3">
+              <Code2 className="w-3.5 h-3.5" />
+              <span>INTERACTIVE SOCRATIC SIMULATOR</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
               AI debugging that teaches instead of spoiling
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed">
               Generic assistants paste full solutions on the first prompt. BugQuest unlocks progressive coaching tiers anchored directly to your failing execution trace.
             </p>
           </motion.div>
@@ -220,10 +240,10 @@ export const LandingPage: React.FC = () => {
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.08 }}
             transition={{ duration: 0.65, delay: 0.1, ease: REVEAL_EASE }}
-            className="rounded-3xl bg-[#0b1221] border border-slate-800 shadow-obsidian overflow-hidden"
+            className="rounded-3xl bg-[#0b1221] border border-slate-800 shadow-[0_0_50px_rgba(0,0,0,0.6)] overflow-hidden"
           >
             {/* Console Header */}
-            <div className="px-5 sm:px-7 py-4 border-b border-slate-800/90 flex flex-wrap items-center justify-between gap-3 bg-slate-950/60">
+            <div className="px-5 sm:px-7 py-4 border-b border-slate-800/90 flex flex-wrap items-center justify-between gap-3 bg-slate-950/70">
               <div className="flex items-center gap-2.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
@@ -285,7 +305,7 @@ export const LandingPage: React.FC = () => {
                             onClick={() => setActiveHintLevel(level)}
                             className={`relative text-left p-3 rounded-xl border text-xs transition-colors cursor-pointer ${
                               active
-                                ? 'border-blue-400/50 text-white'
+                                ? 'border-cyan-400/60 text-white'
                                 : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                             }`}
                           >
@@ -293,7 +313,7 @@ export const LandingPage: React.FC = () => {
                               <motion.span
                                 layoutId="coach-tier-pill"
                                 transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                                className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600/35 to-cyan-500/20 border border-blue-400/40 -z-0"
+                                className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600/35 to-cyan-500/20 border border-cyan-400/50 -z-0"
                               />
                             )}
                             <span className="relative z-10 block font-mono text-[10px] font-semibold text-cyan-300 mb-0.5">
@@ -349,13 +369,13 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* ─── Architectural Capabilities with Bespoke Animated Vectors ─── */}
+      {/* ─── Platform Architectural Capabilities Grid (Dark Glass Cards) ─── */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.6, ease: REVEAL_EASE }}
-        className="py-20 sm:py-24 bg-[#f6f8fc]"
+        className="py-20 sm:py-28 bg-[#070c18] border-b border-slate-800/80"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -363,16 +383,16 @@ export const LandingPage: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: REVEAL_EASE }}
-            className="max-w-2xl mb-14"
+            className="max-w-2xl mb-14 text-left"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-semibold mb-3">
-              <Cpu className="w-3.5 h-3.5 text-blue-600" />
-              <span>Platform Architecture</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-700/80 bg-slate-900/60 text-cyan-300 text-xs font-mono font-medium mb-3">
+              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+              <span>PLATFORM ARCHITECTURE</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
               Built for authentic code verification
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-400 mt-3 leading-relaxed">
               Every submission runs through isolated sandboxes, private edge-case suites, and empirical competency scoring.
             </p>
           </motion.div>
@@ -384,26 +404,26 @@ export const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.55, delay: 0, ease: REVEAL_EASE }}
-              whileHover={{ y: -4 }}
-              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-blue-300/80 transition-colors flex flex-col justify-between"
+              whileHover={{ y: -6 }}
+              className="bg-slate-900/70 rounded-2xl border border-slate-800/90 p-6 shadow-xl hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:border-cyan-500/50 transition-all flex flex-col justify-between backdrop-blur-md"
             >
               <div>
-                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-800/80 bg-slate-950/60">
                   <SandboxIsolationVector className="w-full h-32" />
                 </div>
-                <div className="flex items-center gap-2 text-blue-700 text-xs font-semibold mb-2">
+                <div className="flex items-center gap-2 text-cyan-400 text-xs font-semibold mb-2">
                   <Cpu className="w-4 h-4" />
                   <span>Runtime Isolation</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                <h3 className="font-display text-lg font-bold text-white mb-2">
                   Multi-Adapter Code Judge
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-slate-400 leading-relaxed">
                   Executes learner code in an isolated subprocess with strict memory limits, execution timeouts, and syscall barriers.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <Terminal className="w-3.5 h-3.5 text-blue-600" />
+              <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2 text-xs font-semibold text-slate-300">
+                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Python 3 &amp; JavaScript (V8)</span>
               </div>
             </motion.div>
@@ -414,26 +434,26 @@ export const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.55, delay: 0.12, ease: REVEAL_EASE }}
-              whileHover={{ y: -4 }}
-              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-emerald-300/80 transition-colors flex flex-col justify-between"
+              whileHover={{ y: -6 }}
+              className="bg-slate-900/70 rounded-2xl border border-slate-800/90 p-6 shadow-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:border-emerald-500/50 transition-all flex flex-col justify-between backdrop-blur-md"
             >
               <div>
-                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-800/80 bg-slate-950/60">
                   <HiddenTestMatrixVector className="w-full h-32" />
                 </div>
-                <div className="flex items-center gap-2 text-emerald-700 text-xs font-semibold mb-2">
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold mb-2">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Boundary Verification</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                <h3 className="font-display text-lg font-bold text-white mb-2">
                   Private Hidden Test Matrix
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-slate-400 leading-relaxed">
                   Public examples check basic flow while server-side hidden suites verify adversarial inputs and edge bounds without client exposure.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2 text-xs font-semibold text-slate-300">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Tamper-resistant scoring</span>
               </div>
             </motion.div>
@@ -444,26 +464,26 @@ export const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.55, delay: 0.24, ease: REVEAL_EASE }}
-              whileHover={{ y: -4 }}
-              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-amber-300/80 transition-colors flex flex-col justify-between"
+              whileHover={{ y: -6 }}
+              className="bg-slate-900/70 rounded-2xl border border-slate-800/90 p-6 shadow-xl hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] hover:border-amber-500/50 transition-all flex flex-col justify-between backdrop-blur-md"
             >
               <div>
-                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-800/80 bg-slate-950/60">
                   <CryptoDossierVector className="w-full h-32" />
                 </div>
-                <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold mb-2">
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold mb-2">
                   <Fingerprint className="w-4 h-4" />
                   <span>Workforce Proof</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                <h3 className="font-display text-lg font-bold text-white mb-2">
                   Cryptographic Readiness Dossiers
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-slate-400 leading-relaxed">
                   Share verified debugging competency with hiring teams using 64-character unguessable tokens, granular consent toggles, and one-click revocation.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <Award className="w-3.5 h-3.5 text-amber-600" />
+              <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2 text-xs font-semibold text-slate-300">
+                <Award className="w-3.5 h-3.5 text-amber-400" />
                 <span>Instant revocable access</span>
               </div>
             </motion.div>
@@ -471,23 +491,32 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* ─── High-Contrast Obsidian CTA Card ─── */}
+      {/* ─── Glowing High-Conversion Obsidian CTA ─── */}
       <motion.section
         initial={{ opacity: 0, y: 40, scale: 0.97 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: REVEAL_EASE }}
-        className="py-16 sm:py-20 bg-white border-t border-slate-200/80"
+        className="py-16 sm:py-24 bg-[#070c18]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-[#0b1221] border border-slate-800 p-8 sm:p-12 lg:p-14 overflow-hidden shadow-obsidian">
-            <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
+          <div className="relative rounded-3xl bg-gradient-to-br from-[#0c1529] via-[#091021] to-[#070c18] border border-cyan-500/30 p-8 sm:p-12 lg:p-16 overflow-hidden shadow-[0_0_60px_rgba(6,182,212,0.12)]">
+            <div className="absolute inset-0 bg-dark-grid opacity-50 pointer-events-none" />
             <div
               aria-hidden="true"
-              className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-blue-600/25 blur-3xl pointer-events-none"
+              className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-blue-600/30 blur-3xl pointer-events-none"
             />
+            <div
+              aria-hidden="true"
+              className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none"
+            />
+
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-              <div className="max-w-xl">
+              <div className="max-w-xl text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-300 mb-3">
+                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>STEP INTO THE VERIFIED SANDBOX</span>
+                </div>
                 <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
                   Ready to step into the debugging sandbox?
                 </h2>
@@ -499,14 +528,15 @@ export const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <Link
                   to="/challenges"
-                  className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-blue-md transition-all"
+                  className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all"
                 >
+                  <Terminal className="w-4 h-4 text-cyan-200" />
                   <span>Start Practice Session</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-100 font-semibold text-sm transition-all"
+                  className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-slate-700 bg-slate-900/90 hover:bg-slate-800 text-slate-100 font-semibold text-sm transition-all"
                 >
                   Sign In
                 </Link>

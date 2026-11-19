@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
 import {
   Cpu,
   ShieldCheck,
@@ -10,6 +10,9 @@ import {
   Lock,
   ArrowRight,
   ChevronRight,
+  ChevronLeft,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -20,15 +23,15 @@ export interface StageData {
   tagline: string;
   description: string;
   accent: {
-    primary: string;       // e.g. 'text-cyan-400'
-    bg: string;            // e.g. 'bg-cyan-500/10'
-    border: string;        // e.g. 'border-cyan-500/30'
-    glow: string;          // e.g. 'rgba(6, 182, 212, 0.4)'
-    badge: string;         // e.g. 'bg-cyan-500/15 border-cyan-400/30 text-cyan-300'
-    ring: string;          // e.g. 'from-cyan-500 to-blue-500'
-    dot: string;           // e.g. 'bg-cyan-400'
-    gradient: string;      // e.g. 'from-cyan-500/20 via-blue-500/10 to-transparent'
-    cubeGlow: string;      // radial glow behind cube
+    primary: string;
+    bg: string;
+    border: string;
+    glow: string;
+    badge: string;
+    ring: string;
+    dot: string;
+    gradient: string;
+    cubeGlow: string;
   };
   icon: React.ElementType;
   metrics: { label: string; value: string; sub: string }[];
@@ -54,11 +57,11 @@ export const CUBE_STAGES: StageData[] = [
       bg: 'bg-cyan-500/10',
       border: 'border-cyan-500/30',
       glow: 'rgba(6, 182, 212, 0.35)',
-      badge: 'bg-cyan-500/15 border-cyan-400/30 text-cyan-300',
+      badge: 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300',
       ring: 'from-cyan-400 to-blue-600',
       dot: 'bg-cyan-400',
       gradient: 'from-blue-600/20 via-cyan-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(37, 99, 235, 0.1) 50%, transparent 70%)',
+      cubeGlow: 'radial-gradient(circle, rgba(6, 182, 212, 0.28) 0%, rgba(37, 99, 235, 0.12) 50%, transparent 70%)',
     },
     icon: Cpu,
     metrics: [
@@ -100,11 +103,11 @@ def enforce_limits():
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/30',
       glow: 'rgba(16, 185, 129, 0.35)',
-      badge: 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300',
+      badge: 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300',
       ring: 'from-emerald-400 to-teal-600',
       dot: 'bg-emerald-400',
       gradient: 'from-emerald-600/20 via-teal-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(20, 184, 166, 0.1) 50%, transparent 70%)',
+      cubeGlow: 'radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(20, 184, 166, 0.12) 50%, transparent 70%)',
     },
     icon: ShieldCheck,
     metrics: [
@@ -143,11 +146,11 @@ evaluateBoundaryStress(hiddenMatrix);`,
       bg: 'bg-violet-500/10',
       border: 'border-violet-500/30',
       glow: 'rgba(168, 85, 247, 0.35)',
-      badge: 'bg-violet-500/15 border-violet-400/30 text-violet-300',
+      badge: 'bg-violet-500/15 border-violet-400/40 text-violet-300',
       ring: 'from-violet-400 to-indigo-600',
       dot: 'bg-violet-400',
       gradient: 'from-violet-600/20 via-purple-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.1) 50%, transparent 70%)',
+      cubeGlow: 'radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(99, 102, 241, 0.12) 50%, transparent 70%)',
     },
     icon: BrainCircuit,
     metrics: [
@@ -187,11 +190,11 @@ evaluateBoundaryStress(hiddenMatrix);`,
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/30',
       glow: 'rgba(245, 158, 11, 0.35)',
-      badge: 'bg-amber-500/15 border-amber-400/30 text-amber-300',
+      badge: 'bg-amber-500/15 border-amber-400/40 text-amber-300',
       ring: 'from-amber-400 to-rose-600',
       dot: 'bg-amber-400',
       gradient: 'from-amber-600/20 via-orange-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(234, 88, 12, 0.1) 50%, transparent 70%)',
+      cubeGlow: 'radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, rgba(234, 88, 12, 0.12) 50%, transparent 70%)',
     },
     icon: Fingerprint,
     metrics: [
@@ -221,13 +224,27 @@ evaluateBoundaryStress(hiddenMatrix);`,
   },
 ];
 
-export const ScrollReactiveCube: React.FC = () => {
+interface ScrollReactiveCubeProps {
+  autoTourTrigger?: boolean;
+}
+
+export const ScrollReactiveCube: React.FC<ScrollReactiveCubeProps> = ({ autoTourTrigger = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [hoverFace, setHoverFace] = useState<string | null>(null);
+  const [isTourPlaying, setIsTourPlaying] = useState<boolean>(false);
+  const [dragExtraY, setDragExtraY] = useState<number>(0);
 
-  // Mouse hover tilt physics
+  // Mouse hover parallax tilt
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+
+  // Spring physics for cube angles
+  const rotYMotion = useMotionValue(0);
+  const rotXMotion = useMotionValue(-12);
+
+  const springConfig = { stiffness: 90, damping: 20, mass: 0.8 };
+  const smoothRotY = useSpring(rotYMotion, springConfig);
+  const smoothRotX = useSpring(rotXMotion, springConfig);
 
   // Scroll tracking across the section
   const { scrollYProgress } = useScroll({
@@ -235,34 +252,59 @@ export const ScrollReactiveCube: React.FC = () => {
     offset: ['start start', 'end end'],
   });
 
-  // Calculate smooth rotation based on scroll progress
-  // 0.00 -> Stage 0 (y: 0deg)
-  // 0.33 -> Stage 1 (y: -90deg)
-  // 0.66 -> Stage 2 (y: -180deg)
-  // 1.00 -> Stage 3 (y: -270deg)
-  const rawRotY = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [0, -90, -180, -270]);
-  const rawRotX = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [-12, -8, 12, -10]);
-
-  // Spring physics for buttery responsiveness
-  const springConfig = { stiffness: 120, damping: 24, mass: 0.8 };
-  const smoothRotY = useSpring(rawRotY, springConfig);
-  const smoothRotX = useSpring(rawRotX, springConfig);
-
-  // Update active stage when scroll progress moves through tiers
+  // Start tour if triggered from parent button
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on('change', (latest) => {
-      if (latest < 0.22) {
-        setActiveStageIndex(0);
-      } else if (latest < 0.52) {
-        setActiveStageIndex(1);
-      } else if (latest < 0.82) {
-        setActiveStageIndex(2);
-      } else {
-        setActiveStageIndex(3);
+    if (autoTourTrigger) {
+      setIsTourPlaying(true);
+    }
+  }, [autoTourTrigger]);
+
+  // Auto Tour Interval (Cycles through stages every 3.5 seconds)
+  useEffect(() => {
+    if (!isTourPlaying) return;
+
+    const timer = setInterval(() => {
+      setActiveStageIndex((prev) => (prev + 1) % CUBE_STAGES.length);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [isTourPlaying]);
+
+  // Update target rotation whenever activeStageIndex changes
+  useEffect(() => {
+    const target = CUBE_STAGES[activeStageIndex];
+    if (target) {
+      rotYMotion.set(target.cubeAngle.y + dragExtraY);
+      rotXMotion.set(target.cubeAngle.x);
+    }
+  }, [activeStageIndex, dragExtraY, rotYMotion, rotXMotion]);
+
+  // Sync scroll progress to stages when user scrolls through the container
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on('change', (progress) => {
+      // If user is manually scrolling, pause auto tour so user controls scroll
+      if (isTourPlaying && progress > 0.05 && progress < 0.95) {
+        setIsTourPlaying(false);
       }
+
+      // Map progress to stage
+      let idx = 0;
+      if (progress < 0.25) idx = 0;
+      else if (progress < 0.52) idx = 1;
+      else if (progress < 0.78) idx = 2;
+      else idx = 3;
+
+      setActiveStageIndex(idx);
+
+      // Continuous interpolated rotation while scrolling
+      const targetY = -progress * 270;
+      const targetX = -12 + progress * 2;
+      rotYMotion.set(targetY + dragExtraY);
+      rotXMotion.set(targetX);
     });
+
     return () => unsubscribe();
-  }, [scrollYProgress]);
+  }, [scrollYProgress, isTourPlaying, dragExtraY, rotYMotion, rotXMotion]);
 
   const currentStage = CUBE_STAGES[activeStageIndex];
 
@@ -271,7 +313,7 @@ export const ScrollReactiveCube: React.FC = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMouseOffset({ x: x * 20, y: -y * 20 });
+    setMouseOffset({ x: x * 18, y: -y * 18 });
   };
 
   const handleMouseLeave = () => {
@@ -281,69 +323,99 @@ export const ScrollReactiveCube: React.FC = () => {
 
   // Manual stage selection (click tab)
   const handleSelectStage = (idx: number) => {
+    setIsTourPlaying(false);
     setActiveStageIndex(idx);
-    if (!containerRef.current) return;
-    const totalHeight = containerRef.current.offsetHeight - window.innerHeight;
-    const targetScroll = containerRef.current.offsetTop + (idx / (CUBE_STAGES.length - 1)) * totalHeight;
-    window.scrollTo({
-      top: targetScroll,
-      behavior: 'smooth',
-    });
+    setDragExtraY(0);
+  };
+
+  const handleNextStage = () => {
+    setIsTourPlaying(false);
+    setActiveStageIndex((prev) => (prev + 1) % CUBE_STAGES.length);
+  };
+
+  const handlePrevStage = () => {
+    setIsTourPlaying(false);
+    setActiveStageIndex((prev) => (prev - 1 + CUBE_STAGES.length) % CUBE_STAGES.length);
+  };
+
+  const toggleTour = () => {
+    setIsTourPlaying((prev) => !prev);
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[380vh] bg-[#070c18] text-slate-100"
+      className="relative w-full h-[280vh] bg-[#070c18] text-slate-100"
     >
-      {/* Dynamic Background Atmospheric Lighting */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden pointer-events-none z-0">
-        {/* Animated Radial Color Bloom that follows current stage */}
-        <motion.div
-          animate={{
-            background: currentStage.accent.cubeGlow,
-          }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
-          className="absolute inset-0 w-full h-full opacity-90 blur-3xl"
-        />
+      {/* ─── SINGLE STICKY VIEWPORT CONTAINER (Locks content immediately without empty void) ─── */}
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden z-10 px-4 sm:px-6 lg:px-12">
+        {/* Dynamic Background Atmospheric Lighting inside the sticky frame */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          <motion.div
+            animate={{
+              background: currentStage.accent.cubeGlow,
+            }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            className="absolute inset-0 w-full h-full opacity-90 blur-3xl"
+          />
+          <div className="absolute inset-0 bg-dark-grid opacity-35" />
+          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#070c18] to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#070c18] to-transparent" />
+        </div>
 
-        {/* High-tech grid overlay */}
-        <div className="absolute inset-0 bg-dark-grid opacity-35" />
+        {/* Main Content Grid (Immediate at scroll = 0) */}
+        <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
 
-        {/* Ambient Top & Bottom Vignettes */}
-        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#070c18] to-transparent" />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#070c18] to-transparent" />
-      </div>
-
-      {/* Main Sticky Interactive Stage (Locks during scroll) */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center z-10 px-4 sm:px-6 lg:px-12 pointer-events-auto">
-        <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-
-          {/* ────────── LEFT COLUMN: DYNAMIC TEXT & METRICS ────────── */}
+          {/* ────────── LEFT COLUMN: DYNAMIC TEXT, TABS & METRICS ────────── */}
           <div className="lg:col-span-6 space-y-6 text-left">
-            {/* Top Stage Indicator Tabs */}
-            <div className="flex flex-wrap items-center gap-2">
-              {CUBE_STAGES.map((st, idx) => {
-                const isActive = activeStageIndex === idx;
-                return (
-                  <button
-                    key={st.id}
-                    onClick={() => handleSelectStage(idx)}
-                    type="button"
-                    className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold font-mono transition-all duration-300 cursor-pointer ${
-                      isActive
-                        ? `${st.accent.badge} shadow-lg shadow-cyan-950/40 ring-1 ring-current`
-                        : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${isActive ? st.accent.dot : 'bg-slate-600'}`} />
-                    <span>{st.step}</span>
-                    <span className="hidden sm:inline font-sans font-medium text-[11px] truncate max-w-[120px]">
-                      {st.title.split(' ')[0]}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Top Interactive Stage Selector with Tour Mode Button */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {CUBE_STAGES.map((st, idx) => {
+                  const isActive = activeStageIndex === idx;
+                  return (
+                    <button
+                      key={st.id}
+                      onClick={() => handleSelectStage(idx)}
+                      type="button"
+                      className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold font-mono transition-all duration-300 cursor-pointer ${
+                        isActive
+                          ? `${st.accent.badge} shadow-lg shadow-cyan-950/40 ring-1 ring-current`
+                          : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? st.accent.dot : 'bg-slate-600'}`} />
+                      <span>{st.step}</span>
+                      <span className="hidden sm:inline font-sans font-medium text-[11px] truncate max-w-[120px]">
+                        {st.title.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Tour Auto-Play Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTour}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium border transition-all cursor-pointer ${
+                  isTourPlaying
+                    ? 'border-cyan-400/50 bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] animate-pulse'
+                    : 'border-slate-700 bg-slate-850/80 text-slate-300 hover:border-slate-600 hover:text-white'
+                }`}
+              >
+                {isTourPlaying ? (
+                  <>
+                    <Pause className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>TOUR ACTIVE</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 text-slate-400" />
+                    <span>START TOUR</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Dynamic Stage Content with AnimatePresence */}
@@ -357,11 +429,13 @@ export const ScrollReactiveCube: React.FC = () => {
                 className="space-y-4"
               >
                 {/* Stage Tagline / Pill */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono font-medium backdrop-blur-md shadow-xs"
-                     style={{
-                       borderColor: currentStage.accent.glow,
-                       backgroundColor: 'rgba(15, 23, 42, 0.75)',
-                     }}>
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono font-medium backdrop-blur-md shadow-xs"
+                  style={{
+                    borderColor: currentStage.accent.glow,
+                    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                  }}
+                >
                   <currentStage.icon className={`w-3.5 h-3.5 ${currentStage.accent.primary}`} />
                   <span className="text-slate-300">{currentStage.tagline}</span>
                 </div>
@@ -392,30 +466,43 @@ export const ScrollReactiveCube: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Primary Action Button */}
-                <div className="flex items-center gap-3 pt-3">
+                {/* Navigation & Action Bar */}
+                <div className="flex flex-wrap items-center gap-3 pt-3">
                   <Link
                     to="/challenges"
-                    className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-blue-md transition-all"
+                    className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all"
                   >
                     <span>Launch in Sandbox</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
 
-                  <button
-                    type="button"
-                    onClick={() => handleSelectStage((activeStageIndex + 1) % CUBE_STAGES.length)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-850/80 hover:bg-slate-800 text-slate-300 font-medium text-xs transition-all cursor-pointer"
-                  >
-                    <span>Next Feature</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={handlePrevStage}
+                      aria-label="Previous Feature Stage"
+                      className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="font-mono text-xs text-slate-400 px-2">
+                      0{activeStageIndex + 1} / 04
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleNextStage}
+                      aria-label="Next Feature Stage"
+                      className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* ────────── RIGHT COLUMN: THE 3D INTERACTIVE SCROLL CUBE ────────── */}
+          {/* ────────── RIGHT COLUMN: THE 3D INTERACTIVE CUBE ────────── */}
           <div
             className="lg:col-span-6 flex flex-col items-center justify-center relative select-none"
             onMouseMove={handleMouseMove}
@@ -423,26 +510,29 @@ export const ScrollReactiveCube: React.FC = () => {
           >
             {/* Ambient Multi-Ring Cosmic Orbits */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {/* Ring 1 */}
-              <div
-                className="w-72 h-72 sm:w-96 sm:h-96 rounded-full border border-slate-800/80 border-dashed animate-[spin_60s_linear_infinite] opacity-40"
-              />
-              {/* Ring 2 with Accent Gradient */}
+              <div className="w-72 h-72 sm:w-96 sm:h-96 rounded-full border border-slate-800/80 border-dashed animate-[spin_60s_linear_infinite] opacity-40" />
               <div
                 className="w-56 h-56 sm:w-72 sm:h-72 rounded-full border border-cyan-500/20 animate-[spin_40s_linear_infinite_reverse] opacity-50"
                 style={{ borderColor: currentStage.accent.glow }}
               />
-              {/* Center Radiant Halo */}
               <div
                 className="w-40 h-40 rounded-full blur-2xl transition-all duration-700"
                 style={{ backgroundColor: currentStage.accent.glow }}
               />
             </div>
 
-            {/* 3D Scene Viewport */}
+            {/* 3D Scene Viewport with Interactive Touch & Drag */}
             <div className="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center perspective-1200 cursor-grab active:cursor-grabbing">
               {/* Animated 3D Root Container */}
               <motion.div
+                drag="x"
+                dragConstraints={{ left: -180, right: 180 }}
+                onDrag={(_, info) => {
+                  setDragExtraY(info.offset.x * 0.75);
+                }}
+                onDragEnd={() => {
+                  setDragExtraY(0);
+                }}
                 style={{
                   rotateX: smoothRotX,
                   rotateY: smoothRotY,
@@ -453,8 +543,9 @@ export const ScrollReactiveCube: React.FC = () => {
               >
                 {/* ─── FACE 1: FRONT (Stage 01: Subprocess Sandbox) ─── */}
                 <div
+                  onClick={() => handleSelectStage(0)}
                   onMouseEnter={() => setHoverFace('front')}
-                  className="absolute inset-0 rounded-2xl border-2 border-cyan-500/40 bg-[#0d1627]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden"
+                  className="absolute inset-0 rounded-2xl border-2 border-cyan-500/40 bg-[#0d1627]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-cyan-400 transition-colors"
                   style={{
                     transform: 'translateZ(104px)',
                     boxShadow: '0 0 40px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(6, 182, 212, 0.15)',
@@ -475,14 +566,15 @@ export const ScrollReactiveCube: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-cyan-500/20 flex items-center justify-between text-[9px] font-mono text-cyan-400/80">
                     <span>STAGE 01</span>
-                    <span>RUNTIME_V8</span>
+                    <span className="text-cyan-300">CLICK TO VIEW</span>
                   </div>
                 </div>
 
                 {/* ─── FACE 2: RIGHT (Stage 02: Hidden Test Matrix) ─── */}
                 <div
+                  onClick={() => handleSelectStage(1)}
                   onMouseEnter={() => setHoverFace('right')}
-                  className="absolute inset-0 rounded-2xl border-2 border-emerald-500/40 bg-[#0a1a1f]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden"
+                  className="absolute inset-0 rounded-2xl border-2 border-emerald-500/40 bg-[#0a1a1f]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-emerald-400 transition-colors"
                   style={{
                     transform: 'rotateY(90deg) translateZ(104px)',
                     boxShadow: '0 0 40px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.15)',
@@ -503,14 +595,15 @@ export const ScrollReactiveCube: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-emerald-500/20 flex items-center justify-between text-[9px] font-mono text-emerald-400/80">
                     <span>STAGE 02</span>
-                    <span>TAMPER_PROOF</span>
+                    <span className="text-emerald-300">CLICK TO VIEW</span>
                   </div>
                 </div>
 
                 {/* ─── FACE 3: BACK (Stage 03: Socratic AI Coach) ─── */}
                 <div
+                  onClick={() => handleSelectStage(2)}
                   onMouseEnter={() => setHoverFace('back')}
-                  className="absolute inset-0 rounded-2xl border-2 border-violet-500/40 bg-[#160d27]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden"
+                  className="absolute inset-0 rounded-2xl border-2 border-violet-500/40 bg-[#160d27]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-violet-400 transition-colors"
                   style={{
                     transform: 'rotateY(180deg) translateZ(104px)',
                     boxShadow: '0 0 40px rgba(168, 85, 247, 0.3), inset 0 0 20px rgba(168, 85, 247, 0.15)',
@@ -531,14 +624,15 @@ export const ScrollReactiveCube: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-violet-500/20 flex items-center justify-between text-[9px] font-mono text-violet-400/80">
                     <span>STAGE 03</span>
-                    <span>AI_PEDAGOGY</span>
+                    <span className="text-violet-300">CLICK TO VIEW</span>
                   </div>
                 </div>
 
                 {/* ─── FACE 4: LEFT (Stage 04: Cryptographic Dossier) ─── */}
                 <div
+                  onClick={() => handleSelectStage(3)}
                   onMouseEnter={() => setHoverFace('left')}
-                  className="absolute inset-0 rounded-2xl border-2 border-amber-500/40 bg-[#241708]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden"
+                  className="absolute inset-0 rounded-2xl border-2 border-amber-500/40 bg-[#241708]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-amber-400 transition-colors"
                   style={{
                     transform: 'rotateY(-90deg) translateZ(104px)',
                     boxShadow: '0 0 40px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.15)',
@@ -559,7 +653,7 @@ export const ScrollReactiveCube: React.FC = () => {
                   </div>
                   <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between text-[9px] font-mono text-amber-400/80">
                     <span>STAGE 04</span>
-                    <span>WORKFORCE_PROOF</span>
+                    <span className="text-amber-300">CLICK TO VIEW</span>
                   </div>
                 </div>
 
@@ -595,7 +689,7 @@ export const ScrollReactiveCube: React.FC = () => {
                   <span className="text-slate-300 font-semibold">{currentStage.telemetry.title}</span>
                 </div>
                 <span className="text-[10px] text-slate-500 font-mono">
-                  {hoverFace ? `INSPECTING_${hoverFace.toUpperCase()}` : 'LIVE FEED'}
+                  {hoverFace ? `INSPECTING_${hoverFace.toUpperCase()}` : isTourPlaying ? 'AUTO_TOUR_ACTIVE' : 'DRAG_TO_SPIN'}
                 </span>
               </div>
 
@@ -618,11 +712,11 @@ export const ScrollReactiveCube: React.FC = () => {
                 </pre>
               </div>
 
-              {/* Scroll guide hint */}
+              {/* Interactive controls hint */}
               <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                  Scroll down to morph cube &amp; inspect stages
+                  Drag cube to spin &bull; Click faces to jump &bull; Scroll to morph
                 </span>
                 <span className="text-slate-400">0{activeStageIndex + 1} / 04</span>
               </div>
