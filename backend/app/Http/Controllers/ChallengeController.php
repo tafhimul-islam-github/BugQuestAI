@@ -149,6 +149,14 @@ class ChallengeController extends Controller
             ->orWhere('id', $slugOrId)
             ->firstOrFail();
 
+        $user = $request->user('sanctum');
+        if (!$challenge->is_active) {
+            $canPreview = $user && ($user->isAdmin() || ($user->isEducator() && $challenge->author_id === $user->id));
+            if (!$canPreview) {
+                return response()->json(['message' => 'Challenge is not currently available.'], 404);
+            }
+        }
+
         // ONLY expose public test cases to protect assessment integrity
         $publicTestCases = $challenge->publicTestCases()->get()->map(function ($tc) {
             return [
@@ -159,7 +167,6 @@ class ChallengeController extends Controller
             ];
         });
 
-        $user = $request->user('sanctum');
         $userSubmissions = [];
         $isSolved = false;
 
@@ -282,8 +289,10 @@ class ChallengeController extends Controller
         ]);
 
         $slug = Str::slug($validated['title']) . '-' . Str::random(5);
+        $isAdmin = $user->isAdmin();
 
         $challenge = Challenge::create([
+            'author_id' => $user->id,
             'slug' => $slug,
             'title' => $validated['title'],
             'difficulty' => $validated['difficulty'],
@@ -304,7 +313,11 @@ class ChallengeController extends Controller
             'editorial' => $validated['editorial'] ?? null,
             'time_limit_ms' => 2000,
             'memory_limit_mb' => 128,
-            'is_active' => true,
+            'is_active' => $isAdmin,
+            'review_status' => $isAdmin ? Challenge::REVIEW_APPROVED : Challenge::REVIEW_DRAFT,
+            'availability_status' => $isAdmin ? Challenge::AVAILABILITY_PUBLISHED : Challenge::AVAILABILITY_UNPUBLISHED,
+            'published_at' => $isAdmin ? now() : null,
+            'version' => 1,
         ]);
 
         if (!empty($validated['test_cases'])) {
@@ -356,6 +369,11 @@ class ChallengeController extends Controller
         $defectReproduced = ($unmodifiedEval['status'] !== 'accepted');
         $referenceFixPasses = ($patchedEval['status'] === 'accepted');
         $isValid = $defectReproduced && $referenceFixPasses;
+
+        $challenge->forceFill([
+            'last_validated_at' => now(),
+            'last_validation_passed' => $isValid,
+        ])->save();
 
         return response()->json([
             'valid' => $isValid,
@@ -427,7 +445,10 @@ class ChallengeController extends Controller
             ];
         }
 
+        $isAdmin = $user->isAdmin();
+
         $challenge = Challenge::create([
+            'author_id' => $user->id,
             'title' => $aiSynthesized['title'],
             'slug' => $aiSynthesized['slug'],
             'difficulty' => $aiSynthesized['difficulty'],
@@ -443,7 +464,11 @@ class ChallengeController extends Controller
             'topics' => ['byob', 'production_bug', 'sanitized_import'],
             'time_limit_ms' => 2000,
             'memory_limit_mb' => 128,
-            'is_active' => true,
+            'is_active' => $isAdmin,
+            'review_status' => $isAdmin ? Challenge::REVIEW_APPROVED : Challenge::REVIEW_DRAFT,
+            'availability_status' => $isAdmin ? Challenge::AVAILABILITY_PUBLISHED : Challenge::AVAILABILITY_UNPUBLISHED,
+            'published_at' => $isAdmin ? now() : null,
+            'version' => 1,
         ]);
 
         return response()->json([

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Terminal, Lock, Mail, User as UserIcon, Briefcase, ArrowRight, AlertCircle } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
+import { AuthShowcaseVector } from '../components/VectorIllustrations';
+import { PageReveal } from '../components/MotionPrimitives';
+import { Lock, Mail, User as UserIcon, Briefcase, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -30,140 +33,198 @@ export const RegisterPage: React.FC = () => {
       });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Registration failed.');
+      setError(err.message || 'Registration failed. Please check your details.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-sans selection:bg-blue-100 selection:text-blue-900">
-      <div className="w-full max-w-md">
-        
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2.5 mb-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-blue-sm group-hover:scale-105 transition-all">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <span className="font-extrabold text-2xl text-slate-900 tracking-tight">BugQuest <span className="text-blue-600">AI</span></span>
-          </Link>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Create your learner account</h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-              Sign in
+    <PageReveal className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-sans">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-card-hover">
+        {/* Left: Obsidian Showcase */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-9 bg-[#0b1221] text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none"
+          />
+
+          <div className="relative z-10 space-y-6">
+            <Link to="/" className="inline-flex items-center gap-2.5 group">
+              <BrandLogo size="md" dark />
+              <span className="font-display font-bold text-xl tracking-tight text-white">
+                BugQuest <span className="text-cyan-400">AI</span>
+              </span>
             </Link>
-          </p>
+
+            <div className="space-y-2.5">
+              <h2 className="font-display text-2xl font-bold leading-snug text-white">
+                Build verifiable debugging evidence from day one.
+              </h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Every fix you submit is evaluated in an isolated sandbox and recorded into your personal competency graph.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <AuthShowcaseVector className="w-full h-44" />
+            </div>
+          </div>
+
+          <ul className="relative z-10 space-y-2.5 text-xs text-slate-300 pt-6 border-t border-slate-800">
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Multi-file real-codebase debugging challenges</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>Guided progressive hints without solution spoilers</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>Shareable, consent-controlled workforce dossiers</span>
+            </li>
+          </ul>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-card">
-          {error && (
-            <div className="mb-5 p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-medium flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-600" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Taylor Chen"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-xs font-medium transition-all"
-                />
+        {/* Right: Registration Form */}
+        <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
+          <div className="max-w-md w-full mx-auto">
+            <div className="mb-7">
+              <div className="lg:hidden mb-4">
+                <Link to="/" className="inline-flex items-center gap-2.5">
+                  <BrandLogo size="sm" />
+                  <span className="font-display font-bold text-lg text-slate-900">
+                    BugQuest <span className="text-blue-600">AI</span>
+                  </span>
+                </Link>
               </div>
+              <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+                Create your account
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                Already have an account?{' '}
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+                  Sign in
+                </Link>
+              </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-xs font-medium transition-all"
-                />
+            {error && (
+              <div className="mb-5 p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-medium flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-600" />
+                <span>{error}</span>
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-xs font-medium transition-all"
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="reg-name" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Full name
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    id="reg-name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Taylor Chen"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 text-xs font-medium transition-all"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Target Engineering Role
-              </label>
-              <div className="relative">
-                <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  placeholder="e.g. Backend Engineer, Systems Engineer"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-xs font-medium transition-all"
-                />
+              <div>
+                <label htmlFor="reg-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    id="reg-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 text-xs font-medium transition-all"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Account Type
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-xs font-medium transition-all"
+              <div>
+                <label htmlFor="reg-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    id="reg-password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Choose a strong password"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 text-xs font-medium transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label htmlFor="reg-target-role" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Target engineering role
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      id="reg-target-role"
+                      type="text"
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      placeholder="Backend Engineer"
+                      className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 text-xs font-medium transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="reg-account-type" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Account type
+                  </label>
+                  <select
+                    id="reg-account-type"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 text-xs font-medium transition-all"
+                  >
+                    <option value="learner">Learner (Practice)</option>
+                    <option value="educator">Educator (Classroom)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-2 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-blue-sm transition-all cursor-pointer disabled:opacity-60"
               >
-                <option value="learner">Learner (Individual Practice)</option>
-                <option value="educator">Educator (Classroom Assessment)</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-blue-sm transition-all"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Create Account</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              )}
-            </button>
-          </form>
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-
       </div>
-    </div>
+    </PageReveal>
   );
 };

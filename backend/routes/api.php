@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AdminPanelController;
 use App\Http\Controllers\AiCoachController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\EducatorPanelController;
+use App\Http\Controllers\FeedbackNotificationController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InterviewSessionController;
 use App\Http\Controllers\LearningController;
@@ -38,13 +41,23 @@ Route::post('/interviews', [InterviewSessionController::class, 'store']);
 Route::get('/interviews/{sessionCode}', [InterviewSessionController::class, 'show']);
 Route::post('/interviews/{sessionCode}/evaluate', [InterviewSessionController::class, 'evaluate']);
 
-// Authenticated Endpoints
-Route::middleware('auth:sanctum')->group(function () {
+// Authenticated Endpoints (enforce active account status)
+Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // Current User & Profile
     Route::prefix('auth')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::post('/logout', [AuthController::class, 'logout']);
+    });
+
+    // Learner Challenge Feedback / Issue Reporting
+    Route::post('/challenges/{id}/feedback', [FeedbackNotificationController::class, 'reportChallengeIssue']);
+
+    // Panel Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [FeedbackNotificationController::class, 'notifications']);
+        Route::post('/read-all', [FeedbackNotificationController::class, 'markAllRead']);
+        Route::post('/{id}/read', [FeedbackNotificationController::class, 'markNotificationRead']);
     });
 
     // Submissions & Assessment Engine (Rate Limited: max 15 submissions per min)
@@ -81,10 +94,68 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/share/{token}/revoke', [ReadinessReportController::class, 'revokeShareToken']);
     });
 
-    // Administrative & Instructor Authoring Management
-    Route::prefix('admin')->group(function () {
+    // Legacy Authoring & Validation Endpoints (Educator & Admin)
+    Route::prefix('admin')->middleware('role:educator,admin')->group(function () {
         Route::post('/challenges', [ChallengeController::class, 'store']);
         Route::post('/challenges/import-github', [ChallengeController::class, 'importGithub']);
         Route::post('/challenges/{id}/validate', [ChallengeController::class, 'validateChallenge']);
+    });
+
+    // Educator Panel — Teaching, Content Authoring, Feedback Inbox & Classrooms
+    Route::prefix('educator')->middleware('role:educator,admin')->group(function () {
+        Route::get('/overview', [EducatorPanelController::class, 'overview']);
+
+        // Challenge Studio
+        Route::get('/challenges', [EducatorPanelController::class, 'listChallenges']);
+        Route::post('/challenges', [EducatorPanelController::class, 'createChallenge']);
+        Route::get('/challenges/{id}', [EducatorPanelController::class, 'showChallenge']);
+        Route::put('/challenges/{id}', [EducatorPanelController::class, 'updateChallenge']);
+        Route::post('/challenges/{id}/validate', [EducatorPanelController::class, 'validateChallenge']);
+        Route::post('/challenges/{id}/submit-review', [EducatorPanelController::class, 'submitForReview']);
+        Route::post('/challenges/import-github', [ChallengeController::class, 'importGithub']);
+
+        // Feedback & Issue Triage Inbox
+        Route::get('/feedback', [EducatorPanelController::class, 'listFeedback']);
+        Route::patch('/feedback/{id}', [EducatorPanelController::class, 'updateFeedback']);
+
+        // Classrooms, Assigned Learners & Scoped Progress
+        Route::get('/classrooms', [EducatorPanelController::class, 'listClassrooms']);
+        Route::post('/classrooms', [EducatorPanelController::class, 'createClassroom']);
+        Route::post('/classrooms/{id}/learners', [EducatorPanelController::class, 'addLearnerToClassroom']);
+        Route::delete('/classrooms/{id}/learners/{learnerId}', [EducatorPanelController::class, 'removeLearnerFromClassroom']);
+        Route::post('/classrooms/{id}/assignments', [EducatorPanelController::class, 'assignChallengeToClassroom']);
+        Route::delete('/classrooms/{id}/assignments/{assignmentId}', [EducatorPanelController::class, 'removeAssignment']);
+        Route::get('/classrooms/{id}/progress', [EducatorPanelController::class, 'classroomProgress']);
+    });
+
+    // Admin Panel — Platform Governance, Moderation, Users, Analytics, Audit & Settings
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+        Route::get('/overview', [AdminPanelController::class, 'overview']);
+
+        // User Management
+        Route::get('/users', [AdminPanelController::class, 'listUsers']);
+        Route::patch('/users/{id}/role', [AdminPanelController::class, 'updateUserRole']);
+        Route::patch('/users/{id}/status', [AdminPanelController::class, 'updateUserStatus']);
+        Route::get('/users/{id}/history', [AdminPanelController::class, 'userHistory']);
+
+        // Challenge Moderation & Lifecycle
+        Route::get('/challenges', [AdminPanelController::class, 'listChallenges']);
+        Route::post('/challenges/bulk', [AdminPanelController::class, 'bulkChallenges']);
+        Route::post('/challenges/{id}/approve', [AdminPanelController::class, 'approveChallenge']);
+        Route::post('/challenges/{id}/request-changes', [AdminPanelController::class, 'requestChanges']);
+        Route::post('/challenges/{id}/publish', [AdminPanelController::class, 'publishChallenge']);
+        Route::post('/challenges/{id}/disable', [AdminPanelController::class, 'disableChallenge']);
+        Route::post('/challenges/{id}/archive', [AdminPanelController::class, 'archiveChallenge']);
+        Route::post('/challenges/{id}/restore', [AdminPanelController::class, 'restoreChallenge']);
+
+        // Platform-Wide Feedback Moderation
+        Route::get('/feedback', [AdminPanelController::class, 'listFeedback']);
+        Route::patch('/feedback/{id}', [AdminPanelController::class, 'updateFeedback']);
+
+        // Advanced Operations: Analytics, Audit Search & Safe Platform Settings
+        Route::get('/analytics', [AdminPanelController::class, 'analytics']);
+        Route::get('/audit-logs', [AdminPanelController::class, 'auditLogs']);
+        Route::get('/settings', [AdminPanelController::class, 'getSettings']);
+        Route::put('/settings', [AdminPanelController::class, 'updateSettings']);
     });
 });

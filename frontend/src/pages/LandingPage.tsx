@@ -1,320 +1,446 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Sparkles, 
-  ShieldCheck, 
-  ArrowRight, 
-  Cpu, 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowRight,
   Terminal,
   CheckCircle2,
-  BrainCircuit,
+  Cpu,
+  ShieldCheck,
   Fingerprint,
-  Code2,
-  TrendingUp,
   Award,
-  Zap
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
+import { HeroSandbox3D } from '../components/HeroSandbox3D';
+import {
+  SandboxIsolationVector,
+  HiddenTestMatrixVector,
+  CryptoDossierVector,
+} from '../components/VectorIllustrations';
+
+type HintTierKey = 'nudge' | 'direction' | 'debugging_guidance' | 'detailed_explanation';
+
+interface DemoHint {
+  step: string;
+  title: string;
+  text: string;
+  tag: string;
+  tone: string;
+  highlightLine: number;
+  badgeClass: string;
+}
+
+const DEMO_HINTS: Record<HintTierKey, DemoHint> = {
+  nudge: {
+    step: '01',
+    title: 'Conceptual Nudge',
+    text: 'For every number X you inspect, there is only one complement Y that satisfies X + Y = target. What lookup structure lets you query Y in O(1) constant time instead of re-scanning the array?',
+    tag: 'No Spoilers',
+    tone: 'Socratic Inquiry',
+    highlightLine: 3,
+    badgeClass: 'border-blue-400/30 bg-blue-500/15 text-blue-300',
+  },
+  direction: {
+    step: '02',
+    title: 'Directional Guidance',
+    text: 'As you iterate linearly through nums, record each visited value and its index in a dictionary. Check for target - num before moving to the next index.',
+    tag: 'Pattern Strategy',
+    tone: 'Algorithmic Direction',
+    highlightLine: 4,
+    badgeClass: 'border-cyan-400/30 bg-cyan-500/15 text-cyan-300',
+  },
+  debugging_guidance: {
+    step: '03',
+    title: 'Edge-Case Diagnosis',
+    text: 'Line 5 inserts nums[i] into seen BEFORE checking for complement. When target = 6 and nums[i] = 3, the lookup matches the current element with itself and returns [i, i].',
+    tag: 'Pinpointed Fault',
+    tone: 'Failure Diagnostics',
+    highlightLine: 5,
+    badgeClass: 'border-amber-400/30 bg-amber-500/15 text-amber-300',
+  },
+  detailed_explanation: {
+    step: '04',
+    title: 'Optimal Walkthrough',
+    text: 'Swap the order inside the loop: compute comp = target - num, check if comp in seen and return [seen[comp], i], and only afterward store seen[num] = i. Runs in O(n) time and O(n) space.',
+    tag: 'Post-Attempt Review',
+    tone: 'Canonical Fix',
+    highlightLine: 6,
+    badgeClass: 'border-emerald-400/30 bg-emerald-500/15 text-emerald-300',
+  },
+};
+
+const CODE_LINES = [
+  'def two_sum(nums: list[int], target: int) -> list[int]:',
+  '    seen: dict[int, int] = {}',
+  '    for i, num in enumerate(nums):',
+  '        comp = target - num',
+  '        seen[num] = i  # Bug: stored before lookup',
+  '        if comp in seen:',
+  '            return [seen[comp], i]',
+  '    return []',
+];
 
 export const LandingPage: React.FC = () => {
-  const [activeHintLevel, setActiveHintLevel] = useState<'nudge' | 'direction' | 'debugging_guidance' | 'detailed_explanation'>('nudge');
-
-  const demoHints = {
-    nudge: {
-      step: '01',
-      title: 'Conceptual Nudge',
-      text: 'Notice that for each number X, there is only one specific Y that satisfies X + Y = Target. What lookup structure lets you query Y in O(1) constant time instead of re-scanning?',
-      tag: 'No Solution Spoilers',
-      tone: 'Socratic Inquiry',
-      badgeColor: 'border-blue-200 bg-blue-50 text-blue-700'
-    },
-    direction: {
-      step: '02',
-      title: 'Directional Guidance',
-      text: 'A nested loop costs O(N²) time. As you iterate linearly through the array, can you record the numbers you have already visited inside a Hash Map (or JS Map) alongside their indices?',
-      tag: 'Pattern Identification',
-      tone: 'Algorithmic Strategy',
-      badgeColor: 'border-cyan-200 bg-cyan-50 text-cyan-800'
-    },
-    debugging_guidance: {
-      step: '03',
-      title: 'Edge-Case Diagnosis',
-      text: 'Common bug detected: inserting the current element into the map BEFORE checking for the complement! If Target = 6 and current number is 3, checking the map first would match the element with itself, returning [i, i].',
-      tag: 'Pinpointed Fault',
-      tone: 'Failure Diagnostics',
-      badgeColor: 'border-amber-200 bg-amber-50 text-amber-800'
-    },
-    detailed_explanation: {
-      step: '04',
-      title: 'Optimal Walkthrough',
-      text: 'Optimal Algorithm: Initialize an empty Map. Loop index i from 0 to N-1: let complement = target - nums[i]. If map has complement, return [map.get(complement), i]. Else map.set(nums[i], i). Time: O(N), Space: O(N).',
-      tag: 'Post-Attempt Review',
-      tone: 'Canonical Solution',
-      badgeColor: 'border-emerald-200 bg-emerald-50 text-emerald-800'
-    }
-  };
+  const [activeHintLevel, setActiveHintLevel] = useState<HintTierKey>('nudge');
+  const activeHint = DEMO_HINTS[activeHintLevel];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col selection:bg-blue-100 selection:text-blue-900">
-      
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 sm:pt-24 pb-20 sm:pb-28 border-b border-slate-200/80 bg-gradient-to-b from-white via-blue-50/20 to-[#f8fafc]">
-        {/* Soft Ambient Radial Light */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-blue-100/40 via-indigo-50/20 to-transparent blur-[120px] rounded-full pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          
-          {/* Top Architecture Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-200/80 bg-blue-50/80 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-            <span>Enterprise-Grade Coding Assessment & AI Debugging Sandbox</span>
-          </div>
+    <div className="min-h-screen bg-[#f6f8fc] text-slate-900 flex flex-col">
+      {/* Asymmetric Split Hero with Interactive 3D Sandbox Core */}
+      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-200/80 bg-gradient-to-b from-white via-[#f6f8fc] to-[#f6f8fc]">
+        {/* Subtle Architectural Grid Backdrop */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-65 pointer-events-none" />
+        <div
+          aria-hidden="true"
+          className="absolute -top-32 right-0 w-[640px] h-[420px] bg-gradient-to-bl from-blue-100/70 via-cyan-50/40 to-transparent blur-3xl rounded-full pointer-events-none"
+        />
 
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto mb-6">
-            Debug Smarter. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
-              Build Skills. Prove Your Progress.
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-            BugQuest AI pairs <span className="text-slate-900 font-semibold">isolated subprocess runtime evaluation</span> with a 4-tier pedagogical AI coach that refuses to spoil solutions. Track verified algorithmic evidence and generate tamper-proof readiness dossiers.
-          </p>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
-            <Link
-              to="/challenges"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-blue-sm hover:shadow-blue-md transition-all duration-150"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+            {/* Left: Crisp Value Proposition */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-6 space-y-6 text-left"
             >
-              <Terminal className="w-4 h-4" />
-              <span>Explore Challenge Library</span>
-              <ArrowRight className="w-4 h-4 ml-0.5" />
-            </Link>
-            <Link
-              to="/register"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm shadow-sm transition-all"
-            >
-              <span>Create Free Account</span>
-            </Link>
-          </div>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white/90 text-slate-700 text-xs font-semibold shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Isolated Subprocess Judge &amp; Socratic AI Coach</span>
+              </div>
 
-          {/* System Guarantees Bar */}
-          <div className="mt-16 pt-8 border-t border-slate-200/80 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-slate-600">
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/70 border border-slate-200/60 shadow-xs">
-              <Cpu className="w-4 h-4 text-blue-600" />
-              <span>Subprocess Sandbox</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/70 border border-slate-200/60 shadow-xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Private Test Isolation</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/70 border border-slate-200/60 shadow-xs">
-              <BrainCircuit className="w-4 h-4 text-indigo-600" />
-              <span>4-Tier Pedagogical Hints</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/70 border border-slate-200/60 shadow-xs">
-              <Fingerprint className="w-4 h-4 text-amber-600" />
-              <span>Cryptographic Dossiers</span>
-            </div>
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-[#0b1221] tracking-[-0.03em] leading-[1.08]">
+                Debug real codebases. Prove your engineering skill.
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+                BugQuest AI pairs isolated subprocess test execution with a 4-tier pedagogical coach that guides your investigation without handing over answers. Build verifiable, consent-governed readiness dossiers from real fixes.
+              </p>
+
+              {/* Primary & Secondary Actions */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <Link
+                  to="/challenges"
+                  className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-blue-sm hover:shadow-blue-md transition-all duration-200"
+                >
+                  <Terminal className="w-4 h-4" />
+                  <span>Explore Challenges</span>
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 text-slate-800 font-semibold text-sm shadow-xs transition-all"
+                >
+                  <span>Create Free Account</span>
+                </Link>
+              </div>
+
+              {/* Compact Proof Metrics */}
+              <div className="pt-6 mt-2 border-t border-slate-200/80 grid grid-cols-3 gap-4 max-w-lg">
+                <div>
+                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">4 Tiers</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Zero-spoiler coaching</p>
+                </div>
+                <div>
+                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">100%</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Hidden test isolation</p>
+                </div>
+                <div>
+                  <p className="font-display text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">64-char</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Revocable proof tokens</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right: Interactive 3D Sandbox Core */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:col-span-6"
+            >
+              <HeroSandbox3D />
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Progressive Coach Showcase */}
-      <section className="py-20 bg-white border-b border-slate-200/80 relative">
+      {/* Interactive Progressive AI Coach Simulator */}
+      <section className="py-20 sm:py-24 bg-white border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-3 border border-blue-200/60">
-              <Zap className="w-3.5 h-3.5 text-blue-600" />
-              <span>Pedagogical Coaching Architecture</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              AI Debugging that Teaches, Not Spoils
+          <div className="max-w-2xl mb-12">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+              AI debugging that teaches instead of spoiling
             </h2>
-            <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
-              Unlike generic LLM wrappers that dump copy-paste solutions, BugQuest unlocks progressive tiers calibrated to your specific execution failure.
+            <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
+              Generic assistants paste full solutions on the first prompt. BugQuest unlocks progressive coaching tiers anchored directly to your failing execution trace.
             </p>
           </div>
 
-          {/* Interactive Tier Switcher */}
-          <div className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-[#f8fafc] p-6 sm:p-8 shadow-card relative overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4 mb-6">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-rose-400" />
-                <span className="w-3 h-3 rounded-full bg-amber-400" />
-                <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                <span className="text-xs font-mono font-medium text-slate-600 ml-2">coaching_session_two_sum.py</span>
+          <div className="rounded-3xl bg-[#0b1221] border border-slate-800 shadow-obsidian overflow-hidden">
+            {/* Console Header */}
+            <div className="px-5 sm:px-7 py-4 border-b border-slate-800/90 flex flex-wrap items-center justify-between gap-3 bg-slate-950/60">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+                <span className="font-mono text-xs text-slate-300 ml-2">services/two_sum.py</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                <span>AI Coach: Active</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-[11px] font-mono text-rose-300">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>AssertionError: expected [1, 2], got [0, 0]</span>
               </div>
             </div>
 
-            {/* Level Selector Tabs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
-              {(['nudge', 'direction', 'debugging_guidance', 'detailed_explanation'] as const).map((level) => {
-                const info = demoHints[level];
-                const active = activeHintLevel === level;
-                return (
-                  <button
-                    key={level}
-                    onClick={() => setActiveHintLevel(level)}
-                    className={`flex flex-col text-left p-3.5 rounded-xl border text-xs transition-all duration-150 ${
-                      active
-                        ? 'border-blue-600 bg-blue-600 text-white shadow-blue-sm font-semibold'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50/50'
-                    }`}
-                  >
-                    <span className={`font-mono text-[10px] font-bold mb-0.5 ${active ? 'text-blue-100' : 'text-blue-600'}`}>
-                      TIER {info.step}
-                    </span>
-                    <span className="truncate">{info.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Active Tier Output Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs transition-all">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${demoHints[activeHintLevel].badgeColor}`}>
-                    {demoHints[activeHintLevel].tag}
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">
-                    Mode: {demoHints[activeHintLevel].tone}
-                  </span>
+            <div className="grid grid-cols-1 lg:grid-cols-12">
+              {/* Left Pane: Code Inspector */}
+              <div className="lg:col-span-5 p-5 sm:p-6 border-b lg:border-b-0 lg:border-r border-slate-800/90 bg-[#0d1526]">
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-3">
+                  <span>Source Inspector</span>
+                  <span className="text-cyan-400">Line {activeHint.highlightLine} focused</span>
                 </div>
-                <span className="text-xs font-mono font-medium text-slate-500">Tier {demoHints[activeHintLevel].step} of 04</span>
+                <pre className="font-mono text-xs leading-6 overflow-x-auto">
+                  {CODE_LINES.map((line, idx) => {
+                    const lineNum = idx + 1;
+                    const isFocused = lineNum === activeHint.highlightLine;
+                    const isBugLine = lineNum === 5;
+                    return (
+                      <div
+                        key={lineNum}
+                        className={`flex items-center gap-3 px-2.5 py-0.5 rounded-md transition-colors duration-200 ${
+                          isFocused
+                            ? isBugLine
+                              ? 'bg-rose-500/15 border-l-2 border-rose-400 text-rose-100'
+                              : 'bg-blue-500/15 border-l-2 border-cyan-400 text-white'
+                            : 'text-slate-400 border-l-2 border-transparent'
+                        }`}
+                      >
+                        <span className="w-4 text-right text-slate-600 select-none shrink-0">
+                          {lineNum}
+                        </span>
+                        <code className="whitespace-pre">{line}</code>
+                      </div>
+                    );
+                  })}
+                </pre>
               </div>
 
-              <p className="text-sm text-slate-700 leading-relaxed font-normal">
-                {demoHints[activeHintLevel].text}
-              </p>
+              {/* Right Pane: 4-Tier Coach Switcher */}
+              <div className="lg:col-span-7 p-5 sm:p-7 flex flex-col justify-between">
+                <div>
+                  {/* Animated Tier Tabs */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+                    {(['nudge', 'direction', 'debugging_guidance', 'detailed_explanation'] as const).map(
+                      (level) => {
+                        const info = DEMO_HINTS[level];
+                        const active = activeHintLevel === level;
+                        return (
+                          <button
+                            type="button"
+                            key={level}
+                            onClick={() => setActiveHintLevel(level)}
+                            className={`relative text-left p-3 rounded-xl border text-xs transition-colors cursor-pointer ${
+                              active
+                                ? 'border-blue-400/50 text-white'
+                                : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                            }`}
+                          >
+                            {active && (
+                              <motion.span
+                                layoutId="coach-tier-pill"
+                                transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                                className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600/35 to-cyan-500/20 border border-blue-400/40 -z-0"
+                              />
+                            )}
+                            <span className="relative z-10 block font-mono text-[10px] font-semibold text-cyan-300 mb-0.5">
+                              Tier {info.step}
+                            </span>
+                            <span className="relative z-10 block font-semibold truncate">{info.title}</span>
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
 
-              <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-                <span className="flex items-center gap-1.5 font-medium text-emerald-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Preserves discovery and engineering struggle
-                </span>
-                <span className="font-mono text-[11px] text-slate-400 font-medium">Zero Answer Leakage</span>
+                  {/* Animated Hint Body */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeHintLevel}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${activeHint.badgeClass}`}
+                          >
+                            {activeHint.tag}
+                          </span>
+                          <span className="text-xs text-slate-400">{activeHint.tone}</span>
+                        </div>
+                        <span className="font-mono text-[11px] text-slate-500">
+                          Tier {activeHint.step} / 04
+                        </span>
+                      </div>
+                      <p className="text-sm sm:text-[15px] text-slate-200 leading-relaxed">
+                        {activeHint.text}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-800/90 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Preserves genuine discovery and debugging judgment
+                  </span>
+                  <span className="font-mono text-[11px] text-slate-500">Zero answer leakage</span>
+                </div>
               </div>
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* Bento Grid Feature Matrix */}
-      <section className="py-24 bg-[#f8fafc] relative">
+      {/* Architectural Capabilities with Bespoke Animated Vectors */}
+      <section className="py-20 sm:py-24 bg-[#f6f8fc]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-3 border border-blue-200/60">
-              <Code2 className="w-3.5 h-3.5 text-blue-600" />
-              <span>Engineered for Production</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Everything Needed for Genuine Code Verification
+          <div className="max-w-2xl mb-14">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+              Built for authentic code verification
             </h2>
-            <p className="text-sm text-slate-600 mt-2">
-              Built from the ground up for strict sandboxed evaluation, reproducible test execution, and verifiable competency tracking.
+            <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">
+              Every submission runs through isolated sandboxes, private edge-case suites, and empirical competency scoring.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Bento Card 1 */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-7 shadow-card hover:shadow-card-hover hover:border-blue-200 transition-all duration-200 flex flex-col justify-between">
+            {/* Card 1 */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-blue-300/80 transition-colors flex flex-col justify-between"
+            >
               <div>
-                <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-5 shadow-xs">
-                  <Cpu className="w-5 h-5" />
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                  <SandboxIsolationVector className="w-full h-32" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Multi-Adapter Code Judge</h3>
+                <div className="flex items-center gap-2 text-blue-700 text-xs font-semibold mb-2">
+                  <Cpu className="w-4 h-4" />
+                  <span>Runtime Isolation</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                  Multi-Adapter Code Judge
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Executes learner submissions in an isolated subprocess. Strict memory constraints, execution timeouts, and syscall safety barriers prevent environment compromise.
+                  Executes learner code in an isolated subprocess with strict memory limits, execution timeouts, and syscall barriers.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-blue-700">
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Supports Python 3 & JS (V8)</span>
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <Terminal className="w-3.5 h-3.5 text-blue-600" />
+                <span>Python 3 &amp; JavaScript (V8)</span>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Bento Card 2 */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-7 shadow-card hover:shadow-card-hover hover:border-emerald-200 transition-all duration-200 flex flex-col justify-between">
+            {/* Card 2 */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-emerald-300/80 transition-colors flex flex-col justify-between"
+            >
               <div>
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-xs">
-                  <ShieldCheck className="w-5 h-5" />
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                  <HiddenTestMatrixVector className="w-full h-32" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Private Hidden Boundary Tests</h3>
+                <div className="flex items-center gap-2 text-emerald-700 text-xs font-semibold mb-2">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Boundary Verification</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                  Private Hidden Test Matrix
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Public examples verify basic functionality. Private hidden test cases evaluate extreme bounds, negative indices, and adversarial edge cases without client leakage.
+                  Public examples check basic flow while server-side hidden suites verify adversarial inputs and edge bounds without client exposure.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-emerald-700">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>Tamper-Resistant Verification</span>
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Tamper-resistant scoring</span>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Bento Card 3 */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-7 shadow-card hover:shadow-card-hover hover:border-amber-200 transition-all duration-200 flex flex-col justify-between">
+            {/* Card 3 */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card hover:shadow-card-hover hover:border-amber-300/80 transition-colors flex flex-col justify-between"
+            >
               <div>
-                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-5 shadow-xs">
-                  <Fingerprint className="w-5 h-5" />
+                <div className="mb-5 rounded-xl overflow-hidden border border-slate-200/70">
+                  <CryptoDossierVector className="w-full h-32" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Cryptographic Share Dossiers</h3>
+                <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold mb-2">
+                  <Fingerprint className="w-4 h-4" />
+                  <span>Workforce Proof</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">
+                  Cryptographic Readiness Dossiers
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Learners generate shareable workforce dossiers with 64-character unguessable cryptographic tokens, privacy toggles, and instant revocation for technical recruiters.
+                  Share verified debugging competency with hiring teams using 64-character unguessable tokens, granular consent toggles, and one-click revocation.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-amber-700">
-                <Award className="w-3.5 h-3.5" />
-                <span>Instant Revocable Access</span>
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <Award className="w-3.5 h-3.5 text-amber-600" />
+                <span>Instant revocable access</span>
               </div>
-            </div>
-
+            </motion.div>
           </div>
-
         </div>
       </section>
 
-      {/* Bottom CTA Banner */}
-      <section className="py-20 border-t border-slate-200 bg-white text-center relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-4 border border-blue-200">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-            <span>Start Building Verified Competency</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-            Ready to Prove Your Algorithmic Competency?
-          </h2>
-          <p className="text-base text-slate-600 max-w-xl mx-auto mb-8">
-            Access authentic coding challenges, progressive debugging assistance, and real-time skill evidence today.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/challenges"
-              className="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-blue-sm transition-all duration-150"
-            >
-              Start Practice Session
-            </Link>
-            <Link
-              to="/login"
-              className="px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm shadow-sm transition-all"
-            >
-              Sign In to Your Account
-            </Link>
+      {/* High-Contrast Obsidian CTA Card */}
+      <section className="py-16 sm:py-20 bg-white border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-3xl bg-[#0b1221] border border-slate-800 p-8 sm:p-12 lg:p-14 overflow-hidden shadow-obsidian">
+            <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
+            <div
+              aria-hidden="true"
+              className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-blue-600/25 blur-3xl pointer-events-none"
+            />
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+              <div className="max-w-xl">
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  Ready to step into the debugging sandbox?
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed">
+                  Pick a real-codebase defect ticket, run isolated tests, and build empirical proof of your problem-solving skills.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <Link
+                  to="/challenges"
+                  className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-blue-md transition-all"
+                >
+                  <span>Start Practice Session</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-100 font-semibold text-sm transition-all"
+                >
+                  Sign In
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
     </div>
   );
 };

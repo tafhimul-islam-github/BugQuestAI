@@ -56,6 +56,15 @@ class AuthController extends Controller
             ]);
         }
 
+        if ($user->status === 'suspended') {
+            return response()->json([
+                'message' => 'Your account has been suspended. Please contact an administrator.',
+                'reason' => $user->suspended_reason,
+            ], 403);
+        }
+
+        $user->forceFill(['last_login_at' => now()])->save();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
