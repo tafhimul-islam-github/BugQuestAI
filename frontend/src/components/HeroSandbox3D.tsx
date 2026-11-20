@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   BrainCircuit,
   Fingerprint,
-  CheckCircle2,
   Play,
   FileCode2,
   Loader2,
@@ -90,8 +89,6 @@ export const HeroSandbox3D: React.FC = () => {
   const { scrollY } = useScroll();
   const scrollTiltX = useTransform(scrollY, [0, 520], [4, -10]);
   const scrollLiftY = useTransform(scrollY, [0, 520], [0, -24]);
-  const floatOffsetTop = useTransform(scrollY, [0, 520], [0, -34]);
-  const floatOffsetBottom = useTransform(scrollY, [0, 520], [0, -18]);
 
   const pointerRotateY = useTransform(smoothX, [-0.5, 0.5], [-10, 10]);
   const pointerRotateX = useTransform(smoothY, [-0.5, 0.5], [8, -8]);
@@ -274,48 +271,6 @@ export const HeroSandbox3D: React.FC = () => {
               )}
             </button>
           </div>
-
-          {/* Floating 3D Depth Card — Top Right */}
-          <motion.div
-            style={
-              shouldReduceMotion
-                ? undefined
-                : {
-                    y: floatOffsetTop,
-                    transform: 'translateZ(42px)',
-                  }
-            }
-            className="hidden sm:flex items-center gap-2.5 absolute -top-5 -right-5 px-3.5 py-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_16px_36px_-10px_rgba(15,23,42,0.14)]"
-          >
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-900 leading-tight">12 / 12 Tests Passed</p>
-              <p className="text-[10px] font-mono text-emerald-600">Hidden suite verified</p>
-            </div>
-          </motion.div>
-
-          {/* Floating 3D Depth Card — Bottom Left */}
-          <motion.div
-            style={
-              shouldReduceMotion
-                ? undefined
-                : {
-                    y: floatOffsetBottom,
-                    transform: 'translateZ(36px)',
-                  }
-            }
-            className="hidden sm:flex items-center gap-2.5 absolute -bottom-5 -left-5 px-3.5 py-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_16px_36px_-10px_rgba(37,99,235,0.14)]"
-          >
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
-              <BrainCircuit className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-900 leading-tight">Socratic Tier 2</p>
-              <p className="text-[10px] font-mono text-blue-600">0% answer leakage</p>
-            </div>
-          </motion.div>
         </motion.div>
       </motion.div>
     </div>
