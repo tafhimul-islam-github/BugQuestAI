@@ -124,9 +124,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-5">
             <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
               <BrandLogo size="md" />
-              <span className="font-display font-bold text-lg text-slate-900 tracking-tight">
-                BugQuest <span className="text-blue-600">AI</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold text-lg text-slate-900 tracking-tight">
+                  BugQuest
+                </span>
+                <span className="px-2 py-0.5 text-xs font-mono font-semibold tracking-wider text-blue-600 bg-blue-50 border border-blue-200/80 rounded-lg shadow-xs">
+                  AI
+                </span>
+              </div>
             </Link>
           </div>
 
