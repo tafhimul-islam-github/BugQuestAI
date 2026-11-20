@@ -42,27 +42,27 @@ export const RegisterPage: React.FC = () => {
   return (
     <PageReveal className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-sans">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-card-hover">
-        {/* Left: Obsidian Showcase */}
-        <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-9 bg-[#0b1221] text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
+        {/* Left: Light Architectural Showcase */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-9 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white border-r border-slate-200/80 text-slate-900 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-55 pointer-events-none" />
           <div
             aria-hidden="true"
-            className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none"
+            className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-blue-200/45 blur-3xl pointer-events-none"
           />
 
           <div className="relative z-10 space-y-6">
             <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <BrandLogo size="md" dark />
-              <span className="font-display font-bold text-xl tracking-tight text-white">
-                BugQuest <span className="text-cyan-400">AI</span>
+              <BrandLogo size="md" />
+              <span className="font-display font-bold text-xl tracking-tight text-slate-900">
+                BugQuest <span className="text-blue-600">AI</span>
               </span>
             </Link>
 
             <div className="space-y-2.5">
-              <h2 className="font-display text-2xl font-bold leading-snug text-white">
+              <h2 className="font-display text-2xl font-bold leading-snug text-slate-900">
                 Build verifiable debugging evidence from day one.
               </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 Every fix you submit is evaluated in an isolated sandbox and recorded into your personal competency graph.
               </p>
             </div>
@@ -72,17 +72,17 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-          <ul className="relative z-10 space-y-2.5 text-xs text-slate-300 pt-6 border-t border-slate-800">
+          <ul className="relative z-10 space-y-2.5 text-xs text-slate-700 pt-6 border-t border-slate-200/80">
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Multi-file real-codebase debugging challenges</span>
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
               <span>Guided progressive hints without solution spoilers</span>
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
               <span>Shareable, consent-controlled workforce dossiers</span>
             </li>
           </ul>

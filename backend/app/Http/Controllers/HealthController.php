@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AiCoachService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -17,15 +18,7 @@ class HealthController extends Controller
             $dbStatus = 'unhealthy: ' . $e->getMessage();
         }
 
-        $aiStatus = 'offline';
-        try {
-            $aiRes = Http::timeout(2)->get(env('AI_SERVICE_URL', 'http://localhost:8001') . '/health');
-            if ($aiRes->successful()) {
-                $aiStatus = 'healthy';
-            }
-        } catch (\Exception $e) {
-            $aiStatus = 'offline_using_pedagogical_fallback';
-        }
+        $aiStatus = AiCoachService::isOperational() ? 'healthy' : 'offline_using_pedagogical_fallback';
 
         return response()->json([
             'status' => ($dbStatus === 'healthy') ? 'operational' : 'degraded',

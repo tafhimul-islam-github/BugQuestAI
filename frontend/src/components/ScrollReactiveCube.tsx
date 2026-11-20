@@ -1,228 +1,423 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useSpring, useMotionValue, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect, Suspense, lazy } from 'react';
+import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import {
   Cpu,
   ShieldCheck,
   BrainCircuit,
   Fingerprint,
-  Terminal,
-  Activity,
-  Lock,
+  FileCode2,
+  AlertTriangle,
+  CheckCircle2,
   ArrowRight,
-  ChevronRight,
-  ChevronLeft,
   Play,
   Pause,
+  Terminal,
+  GitBranch,
+  Activity,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export interface StageData {
-  id: string;
+const ThreeSandboxSculpture = lazy(() =>
+  import('./ThreeSandboxSculpture').then((m) => ({ default: m.ThreeSandboxSculpture }))
+);
+
+interface PipelineStage {
+  id: 'ingest' | 'fault' | 'coach' | 'sandbox' | 'verify' | 'dossier';
   step: string;
+  ticker: string;
+  badgeText: string;
+  uri: string;
   title: string;
-  tagline: string;
   description: string;
-  accent: {
-    primary: string;
-    bg: string;
-    border: string;
-    glow: string;
-    badge: string;
-    ring: string;
-    dot: string;
-    gradient: string;
-    cubeGlow: string;
-  };
+  accentHex: string;
+  pillClass: string;
+  barClass: string;
+  dotClass: string;
+  auraGradient: string;
   icon: React.ElementType;
-  metrics: { label: string; value: string; sub: string }[];
-  telemetry: {
-    title: string;
-    items: { label: string; val: string; status?: 'good' | 'warn' | 'info' }[];
-    codeSnippet: string;
-    codeLang: string;
-  };
-  cubeAngle: { x: number; y: number };
+  floatingTags: [string, string, string];
+  rotY: number;
+  rotX: number;
 }
 
-export const CUBE_STAGES: StageData[] = [
+const PIPELINE_STAGES: PipelineStage[] = [
+  {
+    id: 'ingest',
+    step: '01',
+    ticker: 'INGESTING MULTI-FILE REPO',
+    badgeText: 'INGESTING',
+    uri: 'repo://src/services/checkout.py',
+    title: 'Real-codebase defect tickets, never toy puzzles.',
+    description:
+      'Learners open a multi-file repository with realistic symptoms, failing logs, and reproducible edge-case bugs — or educators import live GitHub issues via BYOB.',
+    accentHex: '#0284c7',
+    pillClass: 'bg-sky-50 text-sky-700 border-sky-200',
+    barClass: 'bg-sky-500',
+    dotClass: 'bg-sky-500',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(2, 132, 199, 0.12), transparent 62%)',
+    icon: FileCode2,
+    floatingTags: ['src/checkout.py', '4 files indexed', 'AST parsed'],
+    rotY: 0.4,
+    rotX: 0.3,
+  },
+  {
+    id: 'fault',
+    step: '02',
+    ticker: 'LOCALIZING ROOT CAUSE',
+    badgeText: '1 CRITICAL',
+    uri: 'trace://apm-span-409',
+    title: 'Time-travel replay, APM traces & state graphs.',
+    description:
+      'Inspect execution timelines step-by-step, trace latency spikes across spans, and pinpoint the exact line mutating state before boundary checks run.',
+    accentHex: '#e11d48',
+    pillClass: 'bg-rose-50 text-rose-700 border-rose-200',
+    barClass: 'bg-rose-500',
+    dotClass: 'bg-rose-500',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(225, 29, 72, 0.11), transparent 62%)',
+    icon: AlertTriangle,
+    floatingTags: ['TypeError :15', 'heap 41 MB', 'span 18.4ms'],
+    rotY: 1.35,
+    rotX: 0.24,
+  },
+  {
+    id: 'coach',
+    step: '03',
+    ticker: 'SOCRATIC AI COACHING',
+    badgeText: 'TIER 02 · NO SPOILERS',
+    uri: 'coach://socratic-engine',
+    title: '4-tier pedagogical AI coach that refuses to spoil.',
+    description:
+      'Instead of dumping copy-paste answers, our FastAPI + RAG coaching engine unlocks calibrated hints (Nudge → Direction → Diagnosis → Walkthrough) plus interactive Voice Coaching.',
+    accentHex: '#7c3aed',
+    pillClass: 'bg-violet-50 text-violet-700 border-violet-200',
+    barClass: 'bg-violet-600',
+    dotClass: 'bg-violet-600',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(124, 58, 237, 0.11), transparent 62%)',
+    icon: BrainCircuit,
+    floatingTags: ['0% answer leak', 'Voice Coach', 'AST anchored'],
+    rotY: 2.35,
+    rotX: 0.36,
+  },
   {
     id: 'sandbox',
-    step: '01',
-    title: 'Isolated Subprocess Sandbox',
-    tagline: 'Zero-Trust Code Execution with Syscall Containment',
+    step: '04',
+    ticker: 'EXECUTING IN ISOLATED SANDBOX',
+    badgeText: 'RUNNING',
+    uri: 'sandbox://sbx-7f3a',
+    title: 'Zero-trust subprocess judge with syscall guards.',
     description:
-      'Every learner submission is isolated in a sterile containerized sub-process. We enforce microsecond memory ceilings, aggressive CPU timeouts, and impenetrable filesystem boundaries so untrusted code never escapes.',
-    accent: {
-      primary: 'text-cyan-400',
-      bg: 'bg-cyan-500/10',
-      border: 'border-cyan-500/30',
-      glow: 'rgba(6, 182, 212, 0.35)',
-      badge: 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300',
-      ring: 'from-cyan-400 to-blue-600',
-      dot: 'bg-cyan-400',
-      gradient: 'from-blue-600/20 via-cyan-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(6, 182, 212, 0.28) 0%, rgba(37, 99, 235, 0.12) 50%, transparent 70%)',
-    },
+      'Learner patches execute inside an isolated subprocess with strict memory ceilings, CPU timeouts, and disabled network sockets — supporting Python 3 and Node V8.',
+    accentHex: '#2563eb',
+    pillClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    barClass: 'bg-blue-600',
+    dotClass: 'bg-blue-600',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(37, 99, 235, 0.12), transparent 62%)',
     icon: Cpu,
-    metrics: [
-      { label: 'Cold Boot', value: '14ms', sub: 'Instant spawn' },
-      { label: 'Hard Ceiling', value: '256 MB', sub: 'OOM prevention' },
-      { label: 'Isolation', value: 'Level 4', sub: 'Subprocess jail' },
-    ],
-    telemetry: {
-      title: 'RUNTIME TELEMETRY :: ADAPTER_V8_PYTHON',
-      items: [
-        { label: 'SANDBOX_STATE', val: 'ISOLATED_SECURE', status: 'good' },
-        { label: 'CPU_QUOTA', val: '2.00s max allowed', status: 'info' },
-        { label: 'FORK_BARRIER', val: 'BLOCKED (EPERM)', status: 'good' },
-        { label: 'NET_SOCKETS', val: 'DISABLED (0 TX/RX)', status: 'good' },
-      ],
-      codeSnippet: `# Isolated Subprocess Executor
-import resource, os
-
-def enforce_limits():
-    # Strict 256MB memory wall
-    resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, -1))
-    # Timeout syscall alarm
-    resource.setrlimit(resource.RLIMIT_CPU, (2, 3))
-    # Drop root privileges
-    os.setgid(1001); os.setuid(1001)`,
-      codeLang: 'python',
-    },
-    cubeAngle: { x: -12, y: 0 },
+    floatingTags: ['boot 14ms', 'net=none', 'mem 72 MB'],
+    rotY: 3.35,
+    rotX: 0.28,
   },
   {
-    id: 'test-matrix',
-    step: '02',
-    title: 'Hidden Adversarial Test Matrix',
-    tagline: 'Private Boundary Verification & Anti-Tamper Scoring',
+    id: 'verify',
+    step: '05',
+    ticker: 'FIX VERIFIED · 24/24 PASSED',
+    badgeText: '24/24 PASSED',
+    uri: 'test-runner://hidden-suite',
+    title: 'Private hidden suites & chaos boundary fuzzing.',
     description:
-      'Public test cases validate algorithm intent while server-side hidden suites verify adversarial edge cases, null boundaries, and scale inputs without client exposure.',
-    accent: {
-      primary: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30',
-      glow: 'rgba(16, 185, 129, 0.35)',
-      badge: 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300',
-      ring: 'from-emerald-400 to-teal-600',
-      dot: 'bg-emerald-400',
-      gradient: 'from-emerald-600/20 via-teal-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(20, 184, 166, 0.12) 50%, transparent 70%)',
-    },
+      'Public checks validate basic behavior while server-side hidden test suites and chaos injectors verify adversarial edge cases without ever leaking test inputs.',
+    accentHex: '#059669',
+    pillClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    barClass: 'bg-emerald-600',
+    dotClass: 'bg-emerald-600',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(5, 150, 105, 0.12), transparent 62%)',
     icon: ShieldCheck,
-    metrics: [
-      { label: 'Public Suites', value: '3 Cases', sub: 'Syntax verification' },
-      { label: 'Hidden Matrix', value: '18 Cases', sub: 'Zero client leakage' },
-      { label: 'Edge Bounds', value: '100%', sub: 'Scale & fuzz checks' },
-    ],
-    telemetry: {
-      title: 'TEST_MATRIX_EVALUATOR :: PRIVATE_VERIFY',
-      items: [
-        { label: 'PUBLIC_TESTS', val: 'PASS [3/3]', status: 'good' },
-        { label: 'ADVERSARIAL_1', val: 'TARGET=0 & EMPTY [PASS]', status: 'good' },
-        { label: 'ADVERSARIAL_2', val: 'DUPLICATE_KEY_TEST [PASS]', status: 'good' },
-        { label: 'COMPLEXITY_SCAN', val: 'O(N) VERIFIED TIME', status: 'good' },
-      ],
-      codeSnippet: `// Server-Side Edge Case Harness
-const hiddenMatrix = [
-  { input: [3, 3], target: 6, expect: [0, 1] },
-  { input: Array.from({length: 1e5}, (_, i) => i), target: 199997, expect: [99998, 99999] },
-  { input: [-10, -5, 0, 5], target: -15, expect: [0, 1] }
-];
-evaluateBoundaryStress(hiddenMatrix);`,
-      codeLang: 'typescript',
-    },
-    cubeAngle: { x: -8, y: -90 },
-  },
-  {
-    id: 'socratic-coach',
-    step: '03',
-    title: 'Socratic AI Pedagogical Coach',
-    tagline: '4 Progressive Zero-Spoiler Tiers Anchored to AST Trace',
-    description:
-      'Generic AI assistants paste full solutions on the first prompt, destroying learning. BugQuest unlocks 4 calibrated hint tiers anchored directly to the failing execution trace without ever handing out answers.',
-    accent: {
-      primary: 'text-violet-400',
-      bg: 'bg-violet-500/10',
-      border: 'border-violet-500/30',
-      glow: 'rgba(168, 85, 247, 0.35)',
-      badge: 'bg-violet-500/15 border-violet-400/40 text-violet-300',
-      ring: 'from-violet-400 to-indigo-600',
-      dot: 'bg-violet-400',
-      gradient: 'from-violet-600/20 via-purple-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(99, 102, 241, 0.12) 50%, transparent 70%)',
-    },
-    icon: BrainCircuit,
-    metrics: [
-      { label: 'Hint Tiers', value: '4 Levels', sub: 'Calibrated guidance' },
-      { label: 'Answer Leaks', value: '0.00%', sub: 'Strict Socratic guard' },
-      { label: 'Trace Anchor', value: 'Line-Level', sub: 'AST error mapping' },
-    ],
-    telemetry: {
-      title: 'SOCRATIC_GUARDRAIL :: PEDAGOGICAL_INFERENCE',
-      items: [
-        { label: 'TIER_SELECTED', val: 'TIER 02: DIRECTIONAL', status: 'info' },
-        { label: 'FAILURE_NODE', val: 'services/two_sum.py:Line 5', status: 'warn' },
-        { label: 'SPOILER_CHECK', val: 'NO CODE PROVIDED [CLEAN]', status: 'good' },
-        { label: 'INQUIRY_MODE', val: 'SOCRATIC COMPLEMENT Q', status: 'good' },
-      ],
-      codeSnippet: `// Socratic Guard Prompt Schema
-{
-  "system": "Refuse to output code solutions. Guide candidate",
-  "failing_trace": "AssertionError: expected [1, 2], got [0, 0]",
-  "tier": 2, // Directional Strategy
-  "socratic_prompt": "What lookup structure provides O(1) query",
-  "answer_sanitization": "ENABLED (filter code blocks)"
-}`,
-      codeLang: 'json',
-    },
-    cubeAngle: { x: 12, y: -180 },
+    floatingTags: ['24/24 passed', '0 regressions', 'chaos clean'],
+    rotY: 4.35,
+    rotX: 0.22,
   },
   {
     id: 'dossier',
-    step: '04',
-    title: 'Cryptographic Readiness Dossier',
-    tagline: 'Revocable 64-Character Proof Tokens for Hiring Teams',
+    step: '06',
+    ticker: 'CRYPTOGRAPHIC DOSSIER READY',
+    badgeText: 'VERIFIED PROOF',
+    uri: 'dossier://bq_live_9f81a7b2',
+    title: 'Tamper-proof workforce readiness dossiers.',
     description:
-      'Turn authentic problem-solving sessions into cryptographic skill credentials. Share unforgeable verification tokens with engineering recruiters, with granular consent controls and 1-click token revocation.',
-    accent: {
-      primary: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/30',
-      glow: 'rgba(245, 158, 11, 0.35)',
-      badge: 'bg-amber-500/15 border-amber-400/40 text-amber-300',
-      ring: 'from-amber-400 to-rose-600',
-      dot: 'bg-amber-400',
-      gradient: 'from-amber-600/20 via-orange-500/10 to-transparent',
-      cubeGlow: 'radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, rgba(234, 88, 12, 0.12) 50%, transparent 70%)',
-    },
+      'Every verified fix updates the learner’s empirical skill matrix and generates a 64-character revocable share token for engineering hiring managers and educators.',
+    accentHex: '#d97706',
+    pillClass: 'bg-amber-50 text-amber-800 border-amber-200',
+    barClass: 'bg-amber-500',
+    dotClass: 'bg-amber-500',
+    auraGradient: 'radial-gradient(circle at 70% 35%, rgba(217, 119, 6, 0.11), transparent 62%)',
     icon: Fingerprint,
-    metrics: [
-      { label: 'Token Length', value: '64-Char', sub: 'Unguessable entropy' },
-      { label: 'Tamper Proof', value: 'SHA-256', sub: 'Signed telemetry' },
-      { label: 'Revocation', value: 'Instant', sub: '1-click user control' },
-    ],
-    telemetry: {
-      title: 'CRYPTOGRAPHIC_DOSSIER :: TOKEN_VERIFIER',
-      items: [
-        { label: 'DOSSIER_HASH', val: 'e3b0c44298fc1c149afbf4c8', status: 'good' },
-        { label: 'CANDIDATE_ID', val: 'CANDIDATE_#84920 [ANONYMIZED]', status: 'info' },
-        { label: 'RECRUITER_KEY', val: 'bq_live_9f81a7b2... [ACTIVE]', status: 'good' },
-        { label: 'CONSENT_STATUS', val: 'EXPLICIT_GRANTED', status: 'good' },
-      ],
-      codeSnippet: `// Verification Dossier Token Payload
-{
-  "token": "bq_dossier_a9f8e4b7c2d1e0f3a8b7c6d5e4f3a2b1...",
-  "verified_at": "2026-11-20T03:00:00Z",
-  "metrics": { "bug_velocity_sec": 420, "hint_reliance": 0.25 },
-  "signature": "3045022100a9f8e4... [ECDSA-SECP256K1]",
-  "revoked": false
-}`,
-      codeLang: 'json',
-    },
-    cubeAngle: { x: -10, y: -270 },
+    floatingTags: ['64-char token', 'SHA-256 signed', '1-click revoke'],
+    rotY: 5.35,
+    rotX: 0.3,
   },
 ];
+
+const TEST_CHECKLIST = [
+  'returns total for standard cart',
+  'caps 150% coupon at zero balance',
+  'rounds floating-point cents safely',
+  'hidden: empty cart & null coupon',
+  'chaos: 100k concurrent discount fuzz',
+  'regression: negative subtotal guard',
+];
+
+/**
+ * Renders the contextual live product UI card for each of the 6 pipeline stages
+ * (directly modeled on the scrollytelling live-card craft of the reference artifact,
+ * executed in a crisp light architectural palette).
+ */
+const StageLiveCard: React.FC<{ stage: PipelineStage }> = ({ stage }) => {
+  const [passedCount, setPassedCount] = useState(14);
+
+  useEffect(() => {
+    if (stage.id !== 'verify') return;
+    setPassedCount(14);
+    const interval = window.setInterval(() => {
+      setPassedCount((c) => {
+        if (c >= 24) {
+          window.clearInterval(interval);
+          return 24;
+        }
+        return c + 2;
+      });
+    }, 110);
+    return () => window.clearInterval(interval);
+  }, [stage.id]);
+
+  return (
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-[0_20px_50px_-18px_rgba(15,23,42,0.12)] overflow-hidden">
+      {/* Card Header Bar */}
+      <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50/90 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-rose-400/90" />
+          <span className="w-2 h-2 rounded-full bg-amber-400/90" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400/90" />
+          <span className="ml-1.5 font-mono text-[11px] text-slate-600 font-medium truncate">
+            {stage.uri}
+          </span>
+        </div>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold border shrink-0 ${stage.pillClass}`}
+        >
+          {stage.badgeText}
+        </span>
+      </div>
+
+      {/* Stage-Specific Realistic UI Body */}
+      <div className="p-4">
+        {stage.id === 'ingest' && (
+          <div className="space-y-2.5 font-mono text-[11px]">
+            <div className="flex items-center gap-2 text-[10px] text-slate-500 pb-1.5 border-b border-slate-100">
+              <span className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200">
+                checkout.py
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-500">coupons.py</span>
+              <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-500">test_cart.py</span>
+            </div>
+            <div className="rounded-xl bg-[#f8fafc] border border-slate-200/80 p-3 leading-5 text-slate-700">
+              <div>
+                <span className="text-slate-400 mr-3">12</span>
+                <span className="text-indigo-600 font-semibold">def</span>{' '}
+                <span className="text-blue-700 font-semibold">apply_coupon</span>(total, rate):
+              </div>
+              <div>
+                <span className="text-slate-400 mr-3">13</span>
+                {'    '}if not rate or rate &lt;= 0: return total
+              </div>
+              <div className="bg-sky-50/80 -mx-1 px-1 rounded">
+                <span className="text-sky-500 mr-3">14</span>
+                {'    '}discount = total * rate
+              </div>
+              <div>
+                <span className="text-slate-400 mr-3">15</span>
+                {'    '}return total - discount
+              </div>
+            </div>
+          </div>
+        )}
+
+        {stage.id === 'fault' && (
+          <div className="space-y-2.5 font-mono text-[11px]">
+            <div className="rounded-xl bg-[#f8fafc] border border-slate-200/80 p-3 leading-5 text-slate-700">
+              <div>
+                <span className="text-slate-400 mr-3">13</span>
+                {'    '}if not rate: return total
+              </div>
+              <div className="bg-rose-50 border border-rose-200/80 -mx-1 px-1.5 py-0.5 rounded text-rose-900 font-medium flex items-center justify-between">
+                <span>
+                  <span className="text-rose-500 mr-2">14</span>
+                  {'    '}discount = total * rate
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-600 text-white font-bold">
+                  FAULT
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 mr-3">15</span>
+                {'    '}return total - discount
+              </div>
+            </div>
+            <div className="px-3 py-2 rounded-xl bg-rose-50/90 border border-rose-200 text-rose-800 text-[11px] flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              <span className="truncate">
+                CRITICAL: rate=1.5 produces negative charge (-$42.50)
+              </span>
+            </div>
+          </div>
+        )}
+
+        {stage.id === 'coach' && (
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-1.5">
+              {['Nudge', 'Direction', 'Diagnosis', 'Walkthrough'].map((t, i) => (
+                <span
+                  key={t}
+                  className={`flex-1 text-center py-1 rounded-lg text-[10px] font-semibold border ${
+                    i === 1
+                      ? 'bg-violet-600 text-white border-violet-600 shadow-xs'
+                      : i < 1
+                        ? 'bg-violet-50 text-violet-700 border-violet-200'
+                        : 'bg-slate-50 text-slate-400 border-slate-200'
+                  }`}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className="p-3 rounded-xl bg-violet-50/50 border border-violet-200/80 text-xs text-slate-700 leading-relaxed">
+              <p className="font-semibold text-violet-900 mb-1">Socratic Hint (Line 14)</p>
+              What invariant must hold between <code className="font-mono text-violet-700">discount</code> and{' '}
+              <code className="font-mono text-violet-700">total</code> when a promotional rate exceeds 100%?
+            </div>
+            <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+              <span className="text-emerald-700 font-semibold">✓ Zero code spoilers</span>
+              <span>Voice Coach ready</span>
+            </div>
+          </div>
+        )}
+
+        {stage.id === 'sandbox' && (
+          <div className="space-y-2.5 font-mono text-[11px]">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="text-[9px] text-slate-400">MEMORY</div>
+                <div className="text-xs font-bold text-slate-900">72 MB</div>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="text-[9px] text-slate-400">NETWORK</div>
+                <div className="text-xs font-bold text-emerald-700">blocked</div>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="text-[9px] text-slate-400">BOOT</div>
+                <div className="text-xs font-bold text-blue-700">14 ms</div>
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#f8fafc] border border-slate-200/80 p-3 space-y-1 text-[10.5px] text-slate-700">
+              <div className="text-slate-500">$ sandbox up --isolated --net=none</div>
+              <div className="text-emerald-700">✓ container sbx-7f3a booted in 14ms</div>
+              <div className="text-emerald-700">✓ seccomp profile applied · mem 256MB</div>
+              <div className="text-blue-700">▸ replaying 18 hidden boundary cases…</div>
+            </div>
+          </div>
+        )}
+
+        {stage.id === 'verify' && (
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Animated Circular Progress Ring */}
+            <div className="relative w-24 h-24 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 88 88" className="w-full h-full -rotate-90">
+                <circle
+                  cx="44"
+                  cy="44"
+                  r="36"
+                  fill="none"
+                  stroke="#E2E8F0"
+                  strokeWidth="6"
+                />
+                <circle
+                  cx="44"
+                  cy="44"
+                  r="36"
+                  fill="none"
+                  stroke="#059669"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 36}
+                  strokeDashoffset={2 * Math.PI * 36 * (1 - passedCount / 24)}
+                  className="transition-all duration-150"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-display text-lg font-bold text-slate-900 tabular-nums">
+                  {passedCount}/24
+                </span>
+                <span className="font-mono text-[9px] font-semibold text-emerald-700">PASSED</span>
+              </div>
+            </div>
+
+            {/* Live Checklist */}
+            <div className="flex-1 w-full space-y-1.5 font-mono text-[10.5px]">
+              {TEST_CHECKLIST.map((item, i) => {
+                const done = passedCount >= 14 + i * 2;
+                return (
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                        done ? 'text-emerald-600' : 'text-slate-300'
+                      }`}
+                    />
+                    <span className={`truncate ${done ? 'text-slate-800' : 'text-slate-400'}`}>
+                      {item}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {stage.id === 'dossier' && (
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-600">
+                  <GitBranch className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-display text-sm font-bold text-slate-900">
+                    Readiness Dossier Ready
+                  </p>
+                  <p className="font-mono text-[10px] text-slate-500">
+                    fix(checkout): cap coupon discount &amp; guard overflow
+                  </p>
+                </div>
+              </div>
+              <span className="font-display text-lg font-bold text-emerald-700 tabular-nums">
+                96%
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="text-slate-400 block">EVIDENCE</span>
+                <span className="text-slate-800 font-semibold">24/24 hidden tests</span>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="text-slate-400 block">SHARE TOKEN</span>
+                <span className="text-amber-700 font-semibold">64-char revocable</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface ScrollReactiveCubeProps {
   autoTourTrigger?: boolean;
@@ -231,498 +426,254 @@ interface ScrollReactiveCubeProps {
 export const ScrollReactiveCube: React.FC<ScrollReactiveCubeProps> = ({ autoTourTrigger = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
-  const [hoverFace, setHoverFace] = useState<string | null>(null);
   const [isTourPlaying, setIsTourPlaying] = useState<boolean>(false);
-  const [dragExtraY, setDragExtraY] = useState<number>(0);
+  const [scrollRotationY, setScrollRotationY] = useState<number>(PIPELINE_STAGES[0].rotY);
+  const isTourPlayingRef = useRef<boolean>(false);
 
-  // Mouse hover parallax tilt
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-
-  // Spring physics for cube angles
-  const rotYMotion = useMotionValue(0);
-  const rotXMotion = useMotionValue(-12);
-
-  const springConfig = { stiffness: 90, damping: 20, mass: 0.8 };
-  const smoothRotY = useSpring(rotYMotion, springConfig);
-  const smoothRotX = useSpring(rotXMotion, springConfig);
-
-  // Scroll tracking across the section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   });
 
-  // Start tour if triggered from parent button
+  useEffect(() => {
+    isTourPlayingRef.current = isTourPlaying;
+  }, [isTourPlaying]);
+
   useEffect(() => {
     if (autoTourTrigger) {
       setIsTourPlaying(true);
     }
   }, [autoTourTrigger]);
 
-  // Auto Tour Interval (Cycles through stages every 3.5 seconds)
   useEffect(() => {
     if (!isTourPlaying) return;
-
     const timer = setInterval(() => {
-      setActiveStageIndex((prev) => (prev + 1) % CUBE_STAGES.length);
-    }, 3500);
-
+      setActiveStageIndex((prev) => {
+        const next = (prev + 1) % PIPELINE_STAGES.length;
+        setScrollRotationY(PIPELINE_STAGES[next].rotY);
+        return next;
+      });
+    }, 3400);
     return () => clearInterval(timer);
   }, [isTourPlaying]);
 
-  // Update target rotation whenever activeStageIndex changes
-  useEffect(() => {
-    const target = CUBE_STAGES[activeStageIndex];
-    if (target) {
-      rotYMotion.set(target.cubeAngle.y + dragExtraY);
-      rotXMotion.set(target.cubeAngle.x);
-    }
-  }, [activeStageIndex, dragExtraY, rotYMotion, rotXMotion]);
-
-  // Sync scroll progress to stages when user scrolls through the container
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (progress) => {
-      // If user is manually scrolling, pause auto tour so user controls scroll
-      if (isTourPlaying && progress > 0.05 && progress < 0.95) {
+      if (isTourPlayingRef.current && progress > 0.04 && progress < 0.96) {
         setIsTourPlaying(false);
       }
-
-      // Map progress to stage
-      let idx = 0;
-      if (progress < 0.25) idx = 0;
-      else if (progress < 0.52) idx = 1;
-      else if (progress < 0.78) idx = 2;
-      else idx = 3;
-
-      setActiveStageIndex(idx);
-
-      // Continuous interpolated rotation while scrolling
-      const targetY = -progress * 270;
-      const targetX = -12 + progress * 2;
-      rotYMotion.set(targetY + dragExtraY);
-      rotXMotion.set(targetX);
+      const idx = Math.min(
+        PIPELINE_STAGES.length - 1,
+        Math.floor(progress * PIPELINE_STAGES.length)
+      );
+      setActiveStageIndex((prev) => (prev === idx ? prev : idx));
+      setScrollRotationY(0.4 + progress * Math.PI * 1.9);
     });
 
     return () => unsubscribe();
-  }, [scrollYProgress, isTourPlaying, dragExtraY, rotYMotion, rotXMotion]);
+  }, [scrollYProgress]);
 
-  const currentStage = CUBE_STAGES[activeStageIndex];
+  const currentStage = PIPELINE_STAGES[activeStageIndex];
 
-  // Mouse move on cube area for interactive tactile 3D tilt
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMouseOffset({ x: x * 18, y: -y * 18 });
-  };
-
-  const handleMouseLeave = () => {
-    setMouseOffset({ x: 0, y: 0 });
-    setHoverFace(null);
-  };
-
-  // Manual stage selection (click tab)
   const handleSelectStage = (idx: number) => {
     setIsTourPlaying(false);
     setActiveStageIndex(idx);
-    setDragExtraY(0);
+    setScrollRotationY(PIPELINE_STAGES[idx].rotY);
   };
 
   const handleNextStage = () => {
-    setIsTourPlaying(false);
-    setActiveStageIndex((prev) => (prev + 1) % CUBE_STAGES.length);
-  };
-
-  const handlePrevStage = () => {
-    setIsTourPlaying(false);
-    setActiveStageIndex((prev) => (prev - 1 + CUBE_STAGES.length) % CUBE_STAGES.length);
-  };
-
-  const toggleTour = () => {
-    setIsTourPlaying((prev) => !prev);
+    handleSelectStage((activeStageIndex + 1) % PIPELINE_STAGES.length);
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[280vh] bg-[#070c18] text-slate-100"
+      className="relative w-full h-[320vh] bg-gradient-to-b from-[#f8fafc] via-white to-[#f4f7fb] text-slate-900 border-b border-slate-200/80"
     >
-      {/* ─── SINGLE STICKY VIEWPORT CONTAINER (Locks content immediately without empty void) ─── */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden z-10 px-4 sm:px-6 lg:px-12">
-        {/* Dynamic Background Atmospheric Lighting inside the sticky frame */}
+      {/* Sticky Scrollytelling Studio Viewport */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden z-10 px-4 sm:px-6 lg:px-10 pt-20 pb-5">
+        {/* Soft Daylight Stage-Adaptive Glow & Architectural Grid */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
           <motion.div
-            animate={{
-              background: currentStage.accent.cubeGlow,
-            }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="absolute inset-0 w-full h-full opacity-90 blur-3xl"
+            animate={{ background: currentStage.auraGradient }}
+            transition={{ duration: 0.65, ease: 'easeInOut' }}
+            className="absolute inset-0 w-full h-full"
           />
-          <div className="absolute inset-0 bg-dark-grid opacity-35" />
-          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#070c18] to-transparent" />
-          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#070c18] to-transparent" />
+          <div className="absolute inset-0 bg-grid-pattern opacity-45" />
         </div>
 
-        {/* Main Content Grid (Immediate at scroll = 0) */}
-        <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
-
-          {/* ────────── LEFT COLUMN: DYNAMIC TEXT, TABS & METRICS ────────── */}
-          <div className="lg:col-span-6 space-y-6 text-left">
-            {/* Top Interactive Stage Selector with Tour Mode Button */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                {CUBE_STAGES.map((st, idx) => {
-                  const isActive = activeStageIndex === idx;
-                  return (
-                    <button
-                      key={st.id}
-                      onClick={() => handleSelectStage(idx)}
-                      type="button"
-                      className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold font-mono transition-all duration-300 cursor-pointer ${
-                        isActive
-                          ? `${st.accent.badge} shadow-lg shadow-cyan-950/40 ring-1 ring-current`
-                          : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? st.accent.dot : 'bg-slate-600'}`} />
-                      <span>{st.step}</span>
-                      <span className="hidden sm:inline font-sans font-medium text-[11px] truncate max-w-[120px]">
-                        {st.title.split(' ')[0]}
-                      </span>
-                    </button>
-                  );
-                })}
+        {/* Main 2-Column Stage */}
+        <div className="max-w-7xl w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center relative z-10 min-h-0">
+          {/* LEFT COLUMN: Clean Editorial Stage Narrative */}
+          <div className="lg:col-span-5 space-y-5 text-left">
+            <div className="flex items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs text-[11px] font-mono text-slate-700">
+                <span className={`w-2 h-2 rounded-full ${currentStage.dotClass} animate-pulse`} />
+                <span>AUTONOMOUS DEBUGGING PIPELINE</span>
               </div>
 
-              {/* Tour Auto-Play Toggle Button */}
               <button
                 type="button"
-                onClick={toggleTour}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium border transition-all cursor-pointer ${
+                onClick={() => setIsTourPlaying((p) => !p)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-semibold border transition-all cursor-pointer ${
                   isTourPlaying
-                    ? 'border-cyan-400/50 bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] animate-pulse'
-                    : 'border-slate-700 bg-slate-850/80 text-slate-300 hover:border-slate-600 hover:text-white'
+                    ? 'border-blue-300 bg-blue-50 text-blue-700'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                 }`}
               >
                 {isTourPlaying ? (
                   <>
-                    <Pause className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>TOUR ACTIVE</span>
+                    <Pause className="w-3 h-3 text-blue-600" />
+                    <span>Pause</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-3.5 h-3.5 text-slate-400" />
-                    <span>START TOUR</span>
+                    <Play className="w-3 h-3 text-slate-500" />
+                    <span>Auto Play</span>
                   </>
                 )}
               </button>
             </div>
 
-            {/* Dynamic Stage Content with AnimatePresence */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStage.id}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -14 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 className="space-y-4"
               >
-                {/* Stage Tagline / Pill */}
                 <div
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono font-medium backdrop-blur-md shadow-xs"
-                  style={{
-                    borderColor: currentStage.accent.glow,
-                    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-                  }}
+                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono font-semibold ${currentStage.pillClass}`}
                 >
-                  <currentStage.icon className={`w-3.5 h-3.5 ${currentStage.accent.primary}`} />
-                  <span className="text-slate-300">{currentStage.tagline}</span>
+                  <currentStage.icon className="w-3.5 h-3.5" />
+                  <span>
+                    {currentStage.step} / 06 · {currentStage.ticker}
+                  </span>
                 </div>
 
-                {/* Big Dynamic Heading */}
-                <h2 className="font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-white tracking-tight leading-[1.12]">
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-[1.12]">
                   {currentStage.title}
                 </h2>
 
-                {/* Explanatory Narrative */}
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
                   {currentStage.description}
                 </p>
 
-                {/* Proof Metrics Grid */}
-                <div className="pt-2 grid grid-cols-3 gap-3">
-                  {currentStage.metrics.map((m, mi) => (
-                    <div
-                      key={mi}
-                      className="p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-sm"
-                    >
-                      <div className="font-mono text-xs text-slate-400">{m.label}</div>
-                      <div className={`font-display text-xl sm:text-2xl font-bold mt-0.5 ${currentStage.accent.primary}`}>
-                        {m.value}
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 truncate">{m.sub}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Navigation & Action Bar */}
-                <div className="flex flex-wrap items-center gap-3 pt-3">
+                <div className="pt-2 flex flex-wrap items-center gap-3">
                   <Link
                     to="/challenges"
-                    className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all"
+                    className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-blue-sm hover:shadow-blue-md transition-all"
                   >
-                    <span>Launch in Sandbox</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    <Terminal className="w-4 h-4" />
+                    <span>Try Live Sandbox</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   </Link>
 
-                  <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={handlePrevStage}
-                      aria-label="Previous Feature Stage"
-                      className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <span className="font-mono text-xs text-slate-400 px-2">
-                      0{activeStageIndex + 1} / 04
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleNextStage}
-                      aria-label="Next Feature Stage"
-                      className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleNextStage}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
+                  >
+                    <span>Next Stage</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* ────────── RIGHT COLUMN: THE 3D INTERACTIVE CUBE ────────── */}
-          <div
-            className="lg:col-span-6 flex flex-col items-center justify-center relative select-none"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-          >
-            {/* Ambient Multi-Ring Cosmic Orbits */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-72 h-72 sm:w-96 sm:h-96 rounded-full border border-slate-800/80 border-dashed animate-[spin_60s_linear_infinite] opacity-40" />
-              <div
-                className="w-56 h-56 sm:w-72 sm:h-72 rounded-full border border-cyan-500/20 animate-[spin_40s_linear_infinite_reverse] opacity-50"
-                style={{ borderColor: currentStage.accent.glow }}
-              />
-              <div
-                className="w-40 h-40 rounded-full blur-2xl transition-all duration-700"
-                style={{ backgroundColor: currentStage.accent.glow }}
-              />
-            </div>
+          {/* RIGHT COLUMN: Top 3D Wireframe Polyhedron + Bottom Live Contextual Product Card */}
+          <div className="lg:col-span-7 flex flex-col items-center gap-3">
+            {/* Top Half: Precision 3D Wireframe Polyhedron with Floating Telemetry Chips */}
+            <div className="relative w-full max-w-[540px] h-[240px] sm:h-[265px] flex items-center justify-center">
+              {/* Floating Telemetry Chips inspired by reference */}
+              <div className="hidden sm:flex items-center gap-1.5 absolute top-3 left-3 z-20 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-xs font-mono text-[10px] text-slate-600 pointer-events-none">
+                <Activity className="w-3 h-3" style={{ color: currentStage.accentHex }} />
+                <span>{currentStage.floatingTags[0]}</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 absolute top-3 right-3 z-20 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-xs font-mono text-[10px] text-slate-600 pointer-events-none">
+                <span className={`w-1.5 h-1.5 rounded-full ${currentStage.dotClass}`} />
+                <span>{currentStage.floatingTags[1]}</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 absolute bottom-2 right-4 z-20 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-xs font-mono text-[10px] text-slate-500 pointer-events-none">
+                <span>{currentStage.floatingTags[2]}</span>
+              </div>
 
-            {/* 3D Scene Viewport with Interactive Touch & Drag */}
-            <div className="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center perspective-1200 cursor-grab active:cursor-grabbing">
-              {/* Animated 3D Root Container */}
-              <motion.div
-                drag="x"
-                dragConstraints={{ left: -180, right: 180 }}
-                onDrag={(_, info) => {
-                  setDragExtraY(info.offset.x * 0.75);
-                }}
-                onDragEnd={() => {
-                  setDragExtraY(0);
-                }}
-                style={{
-                  rotateX: smoothRotX,
-                  rotateY: smoothRotY,
-                  x: mouseOffset.x,
-                  y: -mouseOffset.y,
-                }}
-                className="relative w-44 h-44 sm:w-52 sm:h-52 preserve-3d transition-transform duration-100 ease-out"
+              <Suspense
+                fallback={
+                  <div className="w-36 h-36 rounded-2xl bg-white/80 border border-slate-200 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
+                  </div>
+                }
               >
-                {/* ─── FACE 1: FRONT (Stage 01: Subprocess Sandbox) ─── */}
-                <div
-                  onClick={() => handleSelectStage(0)}
-                  onMouseEnter={() => setHoverFace('front')}
-                  className="absolute inset-0 rounded-2xl border-2 border-cyan-500/40 bg-[#0d1627]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-cyan-400 transition-colors"
-                  style={{
-                    transform: 'translateZ(104px)',
-                    boxShadow: '0 0 40px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(6, 182, 212, 0.15)',
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-cyan-500/30 pb-2">
-                    <div className="flex items-center gap-2">
-                      <Cpu className="w-4 h-4 text-cyan-400" />
-                      <span className="font-mono text-[10px] text-cyan-300 font-semibold tracking-wider">SANDBOX_CORE</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    <div className="text-slate-400">ISOLATION: <span className="text-cyan-300 font-bold">STRICT_SUBPROCESS</span></div>
-                    <div className="text-slate-400">BOOT_TIME: <span className="text-emerald-400 font-bold">14.2 ms</span></div>
-                    <div className="text-slate-400">MEMORY_WALL: <span className="text-slate-200">256 MB MAX</span></div>
-                    <div className="text-slate-400">SYSCALL: <span className="text-cyan-400">SECCOMP_BPF</span></div>
-                  </div>
-                  <div className="pt-2 border-t border-cyan-500/20 flex items-center justify-between text-[9px] font-mono text-cyan-400/80">
-                    <span>STAGE 01</span>
-                    <span className="text-cyan-300">CLICK TO VIEW</span>
-                  </div>
-                </div>
-
-                {/* ─── FACE 2: RIGHT (Stage 02: Hidden Test Matrix) ─── */}
-                <div
-                  onClick={() => handleSelectStage(1)}
-                  onMouseEnter={() => setHoverFace('right')}
-                  className="absolute inset-0 rounded-2xl border-2 border-emerald-500/40 bg-[#0a1a1f]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-emerald-400 transition-colors"
-                  style={{
-                    transform: 'rotateY(90deg) translateZ(104px)',
-                    boxShadow: '0 0 40px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.15)',
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-emerald-500/30 pb-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <span className="font-mono text-[10px] text-emerald-300 font-semibold tracking-wider">TEST_MATRIX</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    <div className="text-slate-400">PUBLIC: <span className="text-emerald-300 font-bold">3/3 PASSED</span></div>
-                    <div className="text-slate-400">HIDDEN: <span className="text-emerald-400 font-bold">18/18 SECURE</span></div>
-                    <div className="text-slate-400">EDGE_CHECK: <span className="text-teal-300">STRESS BOUNDS</span></div>
-                    <div className="text-slate-400">LEAKAGE: <span className="text-emerald-300 font-bold">0.00%</span></div>
-                  </div>
-                  <div className="pt-2 border-t border-emerald-500/20 flex items-center justify-between text-[9px] font-mono text-emerald-400/80">
-                    <span>STAGE 02</span>
-                    <span className="text-emerald-300">CLICK TO VIEW</span>
-                  </div>
-                </div>
-
-                {/* ─── FACE 3: BACK (Stage 03: Socratic AI Coach) ─── */}
-                <div
-                  onClick={() => handleSelectStage(2)}
-                  onMouseEnter={() => setHoverFace('back')}
-                  className="absolute inset-0 rounded-2xl border-2 border-violet-500/40 bg-[#160d27]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-violet-400 transition-colors"
-                  style={{
-                    transform: 'rotateY(180deg) translateZ(104px)',
-                    boxShadow: '0 0 40px rgba(168, 85, 247, 0.3), inset 0 0 20px rgba(168, 85, 247, 0.15)',
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-violet-500/30 pb-2">
-                    <div className="flex items-center gap-2">
-                      <BrainCircuit className="w-4 h-4 text-violet-400" />
-                      <span className="font-mono text-[10px] text-violet-300 font-semibold tracking-wider">SOCRATIC_AI</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    <div className="text-slate-400">COACH_TIER: <span className="text-violet-300 font-bold">4-STAGE ZERO_SPOILER</span></div>
-                    <div className="text-slate-400">TRACE_ANCHOR: <span className="text-purple-300">services/two_sum</span></div>
-                    <div className="text-slate-400">HINT_MODE: <span className="text-violet-400">CONCEPTUAL</span></div>
-                    <div className="text-slate-400">CODE_LEAK: <span className="text-emerald-400 font-bold">BLOCKED</span></div>
-                  </div>
-                  <div className="pt-2 border-t border-violet-500/20 flex items-center justify-between text-[9px] font-mono text-violet-400/80">
-                    <span>STAGE 03</span>
-                    <span className="text-violet-300">CLICK TO VIEW</span>
-                  </div>
-                </div>
-
-                {/* ─── FACE 4: LEFT (Stage 04: Cryptographic Dossier) ─── */}
-                <div
-                  onClick={() => handleSelectStage(3)}
-                  onMouseEnter={() => setHoverFace('left')}
-                  className="absolute inset-0 rounded-2xl border-2 border-amber-500/40 bg-[#241708]/95 p-4 flex flex-col justify-between shadow-2xl backdrop-blur-md backface-hidden cursor-pointer hover:border-amber-400 transition-colors"
-                  style={{
-                    transform: 'rotateY(-90deg) translateZ(104px)',
-                    boxShadow: '0 0 40px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.15)',
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-amber-500/30 pb-2">
-                    <div className="flex items-center gap-2">
-                      <Fingerprint className="w-4 h-4 text-amber-400" />
-                      <span className="font-mono text-[10px] text-amber-300 font-semibold tracking-wider">PROOF_DOSSIER</span>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[10px]">
-                    <div className="text-slate-400">TOKEN: <span className="text-amber-300 font-bold">64-CHAR UNGUESSABLE</span></div>
-                    <div className="text-slate-400">ALGO: <span className="text-amber-400 font-bold">ECDSA-SHA256</span></div>
-                    <div className="text-slate-400">CONSENT: <span className="text-emerald-300">ACTIVE_GRANTED</span></div>
-                    <div className="text-slate-400">REVOKE: <span className="text-rose-400 font-bold">1-CLICK</span></div>
-                  </div>
-                  <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between text-[9px] font-mono text-amber-400/80">
-                    <span>STAGE 04</span>
-                    <span className="text-amber-300">CLICK TO VIEW</span>
-                  </div>
-                </div>
-
-                {/* ─── FACE 5: TOP (Obsidian Cap) ─── */}
-                <div
-                  className="absolute inset-0 rounded-2xl border border-slate-700/50 bg-[#090f1d] p-3 flex flex-col items-center justify-center shadow-xl backface-hidden"
-                  style={{
-                    transform: 'rotateX(90deg) translateZ(104px)',
-                  }}
-                >
-                  <Terminal className="w-6 h-6 text-slate-500" />
-                  <span className="font-mono text-[9px] text-slate-500 mt-1">KERNEL_V8</span>
-                </div>
-
-                {/* ─── FACE 6: BOTTOM (Grid Base) ─── */}
-                <div
-                  className="absolute inset-0 rounded-2xl border border-slate-800 bg-[#060a14] p-3 flex flex-col items-center justify-center shadow-xl backface-hidden"
-                  style={{
-                    transform: 'rotateX(-90deg) translateZ(104px)',
-                  }}
-                >
-                  <Lock className="w-6 h-6 text-slate-600" />
-                  <span className="font-mono text-[9px] text-slate-600 mt-1">SEC_ISOLATED</span>
-                </div>
-              </motion.div>
+                <ThreeSandboxSculpture
+                  stageIndex={activeStageIndex}
+                  accentHex={currentStage.accentHex}
+                  targetRotationY={scrollRotationY}
+                  targetRotationX={currentStage.rotX}
+                  onCycleStage={handleNextStage}
+                />
+              </Suspense>
             </div>
 
-            {/* Dynamic Telemetry Inspector Box below Cube */}
-            <div className="w-full max-w-md mt-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-obsidian p-4 backdrop-blur-md">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 text-[11px] font-mono">
-                <div className="flex items-center gap-2">
-                  <Activity className={`w-3.5 h-3.5 ${currentStage.accent.primary}`} />
-                  <span className="text-slate-300 font-semibold">{currentStage.telemetry.title}</span>
-                </div>
-                <span className="text-[10px] text-slate-500 font-mono">
-                  {hoverFace ? `INSPECTING_${hoverFace.toUpperCase()}` : isTourPlaying ? 'AUTO_TOUR_ACTIVE' : 'DRAG_TO_SPIN'}
-                </span>
-              </div>
-
-              {/* Status items */}
-              <div className="grid grid-cols-2 gap-2 my-2.5">
-                {currentStage.telemetry.items.map((item, ii) => (
-                  <div key={ii} className="flex items-center justify-between p-1.5 rounded-lg bg-slate-950/60 border border-slate-850 text-[10px] font-mono">
-                    <span className="text-slate-400">{item.label}</span>
-                    <span className={item.status === 'good' ? 'text-emerald-400' : item.status === 'warn' ? 'text-amber-400' : 'text-cyan-300'}>
-                      {item.val}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Mini Code Window */}
-              <div className="rounded-lg bg-slate-950/80 border border-slate-800/80 p-2.5 font-mono text-[10px] text-slate-300 overflow-x-auto max-h-24">
-                <pre className="text-slate-400 leading-relaxed whitespace-pre font-mono">
-                  <code>{currentStage.telemetry.codeSnippet}</code>
-                </pre>
-              </div>
-
-              {/* Interactive controls hint */}
-              <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-500">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                  Drag cube to spin &bull; Click faces to jump &bull; Scroll to morph
-                </span>
-                <span className="text-slate-400">0{activeStageIndex + 1} / 04</span>
-              </div>
+            {/* Bottom Half: Contextual Live UI Card (Morphs per Stage!) */}
+            <div className="w-full max-w-[540px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStage.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.24, ease: 'easeOut' }}
+                >
+                  <StageLiveCard stage={currentStage} />
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
+        </div>
 
+        {/* PINNED CLICKABLE 6-SEGMENT TIMELINE BAR (Directly Inspired by Reference) */}
+        <div className="max-w-5xl w-full mx-auto relative z-20 pt-2">
+          <div className="rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.12)] px-4 py-2.5 flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] font-semibold text-slate-800 shrink-0 min-w-[210px]">
+              <span style={{ color: currentStage.accentHex }}>&gt;</span>
+              <span className="truncate">{currentStage.ticker}_</span>
+            </div>
+
+            {/* 6 Clickable Progress Segments */}
+            <div className="flex-1 grid grid-cols-6 gap-2" role="tablist" aria-label="Pipeline stages">
+              {PIPELINE_STAGES.map((st, idx) => {
+                const isDoneOrActive = idx <= activeStageIndex;
+                const isCurrent = idx === activeStageIndex;
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isCurrent}
+                    aria-label={`Jump to stage ${st.step}: ${st.ticker}`}
+                    onClick={() => handleSelectStage(idx)}
+                    className="group py-2 flex items-center cursor-pointer focus-visible:outline-none"
+                  >
+                    <span
+                      className={`block w-full h-1.5 rounded-full transition-all duration-300 ${
+                        isDoneOrActive
+                          ? st.barClass
+                          : 'bg-slate-200 group-hover:bg-slate-300'
+                      } ${isCurrent ? 'scale-y-125 shadow-xs' : ''}`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="font-mono text-xs font-bold text-slate-600 tabular-nums shrink-0">
+              {currentStage.step} / 06
+            </span>
+          </div>
         </div>
       </div>
     </div>

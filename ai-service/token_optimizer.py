@@ -135,7 +135,7 @@ def route_model_for_tier(provider: str, hint_level: str, default_ollama: str = "
     provider = provider.lower()
 
     routing_table = {
-        "gemini": ("gemini-1.5-flash", "gemini-1.5-pro"),
+        "gemini": ("gemini-flash-latest", "gemini-flash-latest"),
         "openai": ("gpt-4o-mini", "gpt-4o"),
         "claude": ("claude-3-5-haiku-latest", "claude-3-5-sonnet-latest"),
         "deepseek": ("deepseek-chat", "deepseek-coder"),

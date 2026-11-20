@@ -58,27 +58,27 @@ export const LoginPage: React.FC = () => {
   return (
     <PageReveal className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-sans">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-card-hover">
-        {/* Left: Obsidian Engineering Showcase */}
-        <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-9 bg-[#0b1221] text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-dark-grid opacity-60 pointer-events-none" />
+        {/* Left: Light Architectural Engineering Showcase */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-9 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white border-r border-slate-200/80 text-slate-900 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-55 pointer-events-none" />
           <div
             aria-hidden="true"
-            className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-blue-600/25 blur-3xl pointer-events-none"
+            className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-blue-200/45 blur-3xl pointer-events-none"
           />
 
           <div className="relative z-10 space-y-6">
             <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <BrandLogo size="md" dark />
-              <span className="font-display font-bold text-xl tracking-tight text-white">
-                BugQuest <span className="text-cyan-400">AI</span>
+              <BrandLogo size="md" />
+              <span className="font-display font-bold text-xl tracking-tight text-slate-900">
+                BugQuest <span className="text-blue-600">AI</span>
               </span>
             </Link>
 
             <div className="space-y-2.5">
-              <h2 className="font-display text-2xl font-bold leading-snug text-white">
+              <h2 className="font-display text-2xl font-bold leading-snug text-slate-900">
                 Step back into the isolated debugging sandbox.
               </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 Pick up active multi-file bug investigations, review sandbox test verdicts, and manage your cryptographic readiness dossier.
               </p>
             </div>
@@ -88,17 +88,17 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <ul className="relative z-10 space-y-2.5 text-xs text-slate-300 pt-6 border-t border-slate-800">
+          <ul className="relative z-10 space-y-2.5 text-xs text-slate-700 pt-6 border-t border-slate-200/80">
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Isolated Python 3 &amp; JavaScript V8 execution</span>
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
               <span>4-tier Socratic AI coach with zero answer leakage</span>
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
               <span>Revocable 64-character proof-of-skill dossiers</span>
             </li>
           </ul>

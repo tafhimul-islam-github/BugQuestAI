@@ -94,35 +94,18 @@ export const Navbar: React.FC = () => {
   };
 
   const isActive = (path: string) => location.pathname === path;
-  const isLanding = location.pathname === '/';
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-all backdrop-blur-xl ${
-        isLanding
-          ? 'border-b border-slate-800/80 bg-[#070c18]/90 text-slate-100'
-          : 'border-b border-slate-200/80 bg-white/85 text-slate-900'
-      }`}
-    >
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-xl text-slate-900 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo & Status Tag */}
+          {/* Brand Logo */}
           <div className="flex items-center gap-5">
             <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
               <BrandLogo size="md" />
-              <div
-                className={`flex items-center gap-1.5 font-display font-bold text-lg tracking-tight ${
-                  isLanding ? 'text-white' : 'text-slate-900'
-                }`}
-              >
+              <div className="flex items-center gap-1.5 font-display font-bold text-lg text-slate-900 tracking-tight">
                 <span>BugQuest</span>
-                <span
-                  className={`px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-wider rounded-md ${
-                    isLanding
-                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                      : 'bg-blue-50 text-blue-700 border border-blue-200/80'
-                  }`}
-                >
+                <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-wider rounded-md bg-blue-50 text-blue-700 border border-blue-200/80">
                   AI
                 </span>
               </div>
@@ -140,37 +123,17 @@ export const Navbar: React.FC = () => {
                   key={link.name}
                   to={link.path}
                   className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer ${
-                    active
-                      ? isLanding
-                        ? 'text-cyan-300'
-                        : 'text-blue-700'
-                      : isLanding
-                      ? 'text-slate-300 hover:text-white'
-                      : 'text-slate-600 hover:text-slate-900'
+                    active ? 'text-blue-700' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="nav-active-pill"
                       transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                      className={`absolute inset-0 rounded-xl shadow-xs -z-10 ${
-                        isLanding
-                          ? 'bg-cyan-500/20 border border-cyan-400/40'
-                          : 'bg-blue-50 border border-blue-200/80'
-                      }`}
+                      className="absolute inset-0 rounded-xl bg-blue-50 border border-blue-200/80 shadow-xs -z-10"
                     />
                   )}
-                  <Icon
-                    className={`w-3.5 h-3.5 ${
-                      active
-                        ? isLanding
-                          ? 'text-cyan-300'
-                          : 'text-blue-600'
-                        : isLanding
-                        ? 'text-slate-400'
-                        : 'text-slate-400'
-                    }`}
-                  />
+                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
                   <span>{link.name}</span>
                 </Link>
               );
@@ -291,7 +254,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-all shadow-xs cursor-pointer"
                 >
                   <div className="relative">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-900 to-blue-700 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <span
@@ -384,21 +347,13 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                    isLanding
-                      ? 'text-slate-300 hover:text-white hover:bg-slate-800/80 border border-slate-700/60'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
-                  }`}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className={`group flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                    isLanding
-                      ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                      : 'bg-[#0b1221] hover:bg-blue-600 text-white shadow-sm'
-                  }`}
+                  className="group flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-blue-sm transition-all duration-200"
                 >
                   <span>Start Free</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -504,7 +459,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center py-2.5 rounded-xl bg-[#0b1221] text-xs font-semibold text-white shadow-sm"
+                    className="flex items-center justify-center py-2.5 rounded-xl bg-blue-600 text-xs font-semibold text-white shadow-sm"
                   >
                     Start Free
                   </Link>

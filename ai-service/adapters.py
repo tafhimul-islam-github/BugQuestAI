@@ -22,7 +22,7 @@ class GeminiAdapter(BaseLLMAdapter):
         self.api_key = api_key
 
     async def generate_hint(self, request: HintRequest, retrieved_chunks: Optional[List[RetrievedChunk]] = None) -> HintResponse:
-        model_name = route_model_for_tier("gemini", request.hint_level) if settings.enable_cheap_routing else "gemini-1.5-flash"
+        model_name = settings.gemini_model or (route_model_for_tier("gemini", request.hint_level) if settings.enable_cheap_routing else "gemini-flash-latest")
         endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
         system_prompt = get_system_prompt(settings.prompt_version)
         user_prompt = format_user_prompt(request, retrieved_chunks)
@@ -40,9 +40,13 @@ class GeminiAdapter(BaseLLMAdapter):
 
         async with httpx.AsyncClient(timeout=settings.request_timeout_seconds) as client:
             resp = await client.post(
-                f"{endpoint}?key={self.api_key}",
+                endpoint,
                 json=payload,
-                headers={"Content-Type": "application/json", "X-Gemini-Context-Cache": "enabled"}
+                headers={
+                    "Content-Type": "application/json",
+                    "X-goog-api-key": self.api_key,
+                    "X-Gemini-Context-Cache": "enabled"
+                }
             )
             resp.raise_for_status()
             data = resp.json()
