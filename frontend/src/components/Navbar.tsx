@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -31,12 +31,33 @@ export const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<PanelNotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setUserDropdownOpen(false);
     setNotifOpen(false);
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!userDropdownOpen && !notifOpen) return;
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+
+      if (userDropdownOpen && !userDropdownRef.current?.contains(target)) {
+        setUserDropdownOpen(false);
+      }
+
+      if (notifOpen && !notificationRef.current?.contains(target)) {
+        setNotifOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () => document.removeEventListener('pointerdown', handleOutsidePointerDown);
+  }, [userDropdownOpen, notifOpen]);
 
   useEffect(() => {
     if (!user) {
@@ -168,7 +189,7 @@ export const Navbar: React.FC = () => {
           {/* User Status & Auth Buttons */}
           <div className="hidden md:flex items-center gap-2.5">
             {user && (
-              <div className="relative">
+              <div ref={notificationRef} className="relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -240,7 +261,7 @@ export const Navbar: React.FC = () => {
             )}
 
             {user ? (
-              <div className="relative">
+              <div ref={userDropdownRef} className="relative">
                 <button
                   type="button"
                   onClick={() => {
