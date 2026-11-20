@@ -58,11 +58,111 @@ class AiCoachService
                 }
             }
         } catch (\Exception $e) {
-            Log::info("FastAPI service unreachable, activating structured fallback coach: " . $e->getMessage());
+            Log::info("FastAPI service unreachable, checking direct provider keys: " . $e->getMessage());
         }
 
-        // 2. Fallback to built-in pedagogical coach adapter (matching challenge curated hints or rule-based guidance)
+        // 2. Direct Google Gemini API call (works in Laragon without running Python FastAPI server)
+        $geminiKey = (string) env('GEMINI_API_KEY', '');
+        if ($geminiKey !== '') {
+            $geminiHint = $this->callGeminiDirectly($geminiKey, $payload);
+            if ($geminiHint !== null) {
+                return $geminiHint;
+            }
+        }
+
+        // 3. Fallback to built-in pedagogical coach adapter (matching challenge curated hints or rule-based guidance)
         return $this->getPedagogicalFallback($challenge, $hintLevel, $code, $errorContext, $submission);
+    }
+
+    /**
+     * Check whether an external AI provider key is configured directly in Laravel or the FastAPI service is online.
+     */
+    public static function isOperational(): bool
+    {
+        if (!empty(env('GEMINI_API_KEY')) || !empty(env('OPENROUTER_API_KEY')) || !empty(env('OPENAI_API_KEY'))) {
+            return true;
+        }
+
+        try {
+            $res = Http::timeout(2)->get(env('AI_SERVICE_URL', 'http://127.0.0.1:8001') . '/health');
+            return $res->successful();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Call Google AI Studio Gemini API directly via X-goog-api-key header.
+     */
+    protected function callGeminiDirectly(string $apiKey, array $payload): ?array
+    {
+        $model = env('GEMINI_MODEL', 'gemini-flash-latest');
+        $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
+
+        $systemInstruction = "You are BugQuest AI's Socratic debugging coach. Never reveal the full solution code directly. "
+            . "Provide progressive debugging guidance for level '{$payload['hint_level']}'. "
+            . "Respond ONLY with valid JSON containing keys: "
+            . "\"summary\" (string), \"likely_issue\" (string), \"explanation\" (string), "
+            . "\"next_steps\" (array of strings), \"concept_tags\" (array of strings), \"confidence\" (number 0-1).";
+
+        $userPrompt = "Challenge: {$payload['challenge_title']}\n"
+            . "Description: {$payload['challenge_description']}\n"
+            . "Language: {$payload['language']}\n"
+            . "Hint Level: {$payload['hint_level']}\n"
+            . "Error Context: " . ($payload['error_context'] ?? 'None') . "\n"
+            . "Learner Code:\n{$payload['code']}";
+
+        try {
+            $response = Http::timeout(12)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'X-goog-api-key' => $apiKey,
+                ])
+                ->post($endpoint, [
+                    'systemInstruction' => [
+                        'parts' => [
+                            ['text' => $systemInstruction],
+                        ],
+                    ],
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $userPrompt],
+                            ],
+                        ],
+                    ],
+                    'generationConfig' => [
+                        'responseMimeType' => 'application/json',
+                        'temperature' => 0.2,
+                    ],
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $rawText = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                if (is_string($rawText)) {
+                    $parsed = json_decode($rawText, true);
+                    if (is_array($parsed) && !empty($parsed['summary']) && !empty($parsed['explanation'])) {
+                        return [
+                            'summary' => $parsed['summary'],
+                            'likely_issue' => $parsed['likely_issue'] ?? ($payload['error_context'] ?: 'Logic or boundary condition discrepancy.'),
+                            'hint_level' => $payload['hint_level'],
+                            'explanation' => $parsed['explanation'],
+                            'next_steps' => is_array($parsed['next_steps'] ?? null) ? $parsed['next_steps'] : ['Review the failing test case input and trace variable states.'],
+                            'concept_tags' => is_array($parsed['concept_tags'] ?? null) ? $parsed['concept_tags'] : ($payload['topics'] ?: ['debugging']),
+                            'confidence' => (float) ($parsed['confidence'] ?? 0.92),
+                            'model_used' => $model,
+                        ];
+                    }
+                }
+            } else {
+                Log::warning('Gemini API returned non-200 status: ' . $response->status() . ' ' . $response->body());
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Direct Gemini API request failed, using pedagogical fallback: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     /**

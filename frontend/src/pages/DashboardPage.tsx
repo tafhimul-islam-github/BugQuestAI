@@ -197,35 +197,35 @@ export const DashboardPage: React.FC = () => {
         </StaggerItem>
       </StaggerList>
 
-      {/* Recommended Next Challenge Dark Feature Banner */}
+      {/* Recommended Next Challenge Light Feature Banner */}
       {primaryRec && (
-        <div className="rounded-3xl bg-[#0b1221] border border-slate-800 p-6 sm:p-8 shadow-obsidian relative overflow-hidden">
-          <div className="absolute inset-0 bg-dark-grid opacity-55 pointer-events-none" />
+        <div className="rounded-3xl bg-gradient-to-br from-blue-50/90 via-white to-indigo-50/70 border border-blue-200/80 p-6 sm:p-8 shadow-card relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-45 pointer-events-none" />
           <div
             aria-hidden="true"
-            className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-blue-600/25 blur-3xl pointer-events-none"
+            className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-blue-200/40 blur-3xl pointer-events-none"
           />
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-600 text-white shadow-xs">
                   Recommended Next Quest
                 </span>
-                <span className="text-xs font-mono text-slate-300 capitalize bg-slate-800/90 px-2.5 py-0.5 rounded-full border border-slate-700">
+                <span className="text-xs font-mono text-slate-700 capitalize bg-white/90 px-2.5 py-0.5 rounded-full border border-slate-200">
                   {primaryRec.challenge?.difficulty || primaryRec.topic}
                 </span>
               </div>
-              <h3 className="font-display text-xl sm:text-2xl font-bold text-white">
+              <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-900">
                 {primaryRec.challenge?.title || primaryRec.topic}
               </h3>
-              <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+              <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
                 {primaryRec.reason}
               </p>
             </div>
 
             <Link
               to={`/challenges/${primaryRec.challenge?.slug || primaryRec.challenge?.id || ''}`}
-              className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-blue-md transition-all whitespace-nowrap self-start sm:self-auto"
+              className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-blue-sm hover:shadow-blue-md transition-all whitespace-nowrap self-start sm:self-auto"
             >
               <span>Launch IDE</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

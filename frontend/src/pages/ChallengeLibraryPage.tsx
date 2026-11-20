@@ -83,7 +83,7 @@ export const ChallengeLibraryPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/90 pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0b1221] text-cyan-400 flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/90 text-blue-600 flex items-center justify-center shadow-xs shrink-0">
               <Terminal className="w-5 h-5" />
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
@@ -105,9 +105,9 @@ export const ChallengeLibraryPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setByobOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0b1221] hover:bg-slate-800 text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 text-xs font-semibold flex items-center gap-1.5 shadow-blue-sm transition-all cursor-pointer"
             >
-              <Github className="w-3.5 h-3.5 text-cyan-400" />
+              <Github className="w-3.5 h-3.5 text-white" />
               <span>Import GitHub Bug</span>
             </button>
           )}
@@ -194,7 +194,7 @@ export const ChallengeLibraryPage: React.FC = () => {
                     <motion.span
                       layoutId="difficulty-pill"
                       transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                      className="absolute inset-0 rounded-lg bg-[#0b1221] shadow-xs"
+                      className="absolute inset-0 rounded-lg bg-blue-600 shadow-xs"
                     />
                   )}
                   <span className="relative z-10">{lvl}</span>

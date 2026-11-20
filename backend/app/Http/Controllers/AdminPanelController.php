@@ -7,6 +7,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeFeedback;
 use App\Models\Submission;
 use App\Models\User;
+use App\Services\AiCoachService;
 use App\Services\AuditService;
 use App\Services\PlatformSettingService;
 use Illuminate\Http\JsonResponse;
@@ -51,15 +52,7 @@ class AdminPanelController extends Controller
             $dbHealth = 'degraded';
         }
 
-        $aiHealth = 'fallback_active';
-        try {
-            $res = Http::timeout(2)->get(env('AI_SERVICE_URL', 'http://127.0.0.1:8001') . '/health');
-            if ($res->successful()) {
-                $aiHealth = 'operational';
-            }
-        } catch (\Throwable $e) {
-            $aiHealth = 'fallback_active';
-        }
+        $aiHealth = AiCoachService::isOperational() ? 'operational' : 'fallback_active';
 
         $recentAudit = AuditLog::with('actor:id,name,role')
             ->orderByDesc('created_at')

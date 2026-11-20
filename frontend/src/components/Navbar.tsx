@@ -117,10 +117,10 @@ export const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/85 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-xl text-slate-900 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo & Status Tag */}
+          {/* Brand Logo */}
           <div className="flex items-center gap-5">
             <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
               <BrandLogo size="md" />
@@ -272,7 +272,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-xs font-medium text-slate-700 transition-all shadow-xs cursor-pointer"
                 >
                   <div className="relative">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-900 to-blue-700 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <span
@@ -371,7 +371,7 @@ export const Navbar: React.FC = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="group flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0b1221] hover:bg-blue-600 text-white text-xs font-semibold shadow-sm transition-all duration-200"
+                  className="group flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-blue-sm transition-all duration-200"
                 >
                   <span>Start Free</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -477,7 +477,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center py-2.5 rounded-xl bg-[#0b1221] text-xs font-semibold text-white shadow-sm"
+                    className="flex items-center justify-center py-2.5 rounded-xl bg-blue-600 text-xs font-semibold text-white shadow-sm"
                   >
                     Start Free
                   </Link>

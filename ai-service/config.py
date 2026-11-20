@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     # Options: gemini, openai, claude, deepseek, ollama, fallback_simulated
     ai_provider: str = "fallback_simulated"
     gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-flash-latest"
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     deepseek_api_key: Optional[str] = None
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     request_timeout_seconds: int = 15
 
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=("../.env", "../backend/.env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
